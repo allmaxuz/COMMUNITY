@@ -91,7 +91,14 @@ function toast(t) { const d = document.createElement('div'); d.className = 'toas
 // Ma'lumot manzili: GitHub'da — ?api=… (bot beradi, KONTENT ilovasi bilan bir xil); Apps Script ichida — google.script.run
 const GAS = !!(window.google && google.script && google.script.run);
 const API_URL = (() => { const q = new URLSearchParams(location.search); let u = q.get('api') || q.get('s') || ''; try { if (u) localStorage.setItem('cm_api', u); else u = localStorage.getItem('cm_api') || ''; } catch (e) {} return u; })();
+const OQISH = ['asosiy', 'chatlar', 'yozishma', 'dastafkalar', 'kommentlar', 'shablon', 'savdo', 'qongiroq', 'karta', 'tahlil', 'javobTezligi', 'qayta', 'eslatmalar', 'tayyor', 'jamoa', 'tizim', 'qidir', 'reklama'];
 function api(m, a) {
+  const e = EKRAN, p = apiXom(m, a);
+  if (OQISH.indexOf(m) < 0) return p;                          // yozish so'rovlari — har doim oxirigacha
+  const kut = () => new Promise(() => {});                     // ekran almashgan — jim tashlanadi
+  return p.then(r => e === EKRAN ? r : kut(), x => { if (e === EKRAN) throw x; return kut(); });
+}
+function apiXom(m, a) {
   if (GAS && JIM) a = Object.assign({}, a, { jim: 1 });
   if (GAS) return new Promise((ok, no) => google.script.run.withSuccessHandler(s => { const j = JSON.parse(s); j.ok ? ok(j.r) : no(new Error(j.xato)); }).withFailureHandler(e => no(e)).api(INIT, m, a || {}));
   if (JIM) a = Object.assign({}, a, { jim: 1 });
@@ -110,12 +117,13 @@ setInterval(() => {
   const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
   const t = tarix[tarix.length - 1]; if (!t || [asosiy, xabarlar, yozishma].indexOf(t[0]) < 0) return;
   const y = window.scrollY, pastda = window.innerHeight + y >= document.body.scrollHeight - 40;
-  JIM = true;
-  Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { JIM = false; window.scrollTo(0, t[0] === yozishma && pastda ? document.body.scrollHeight : y); });
+  const e = EKRAN; JIM = true;
+  Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { if (e !== EKRAN) return; JIM = false; window.scrollTo(0, t[0] === yozishma && pastda ? document.body.scrollHeight : y); });
 }, YANGILASH_SON * 1000);
 function sarl(a, b) { $('#sarl').textContent = a; $('#ost').textContent = b || ''; }
 function fon(n) { if (!JIM) document.body.className = 'f-' + n; }
-function bet(fn, ...a) { fon('qora'); tarix.push([fn, a]); $('#orq').style.display = tarix.length > 1 ? '' : 'none'; window.scrollTo(0, 0); fn(...a); }
+let EKRAN = 0;                                                 // har yangi ekranda +1: eski ekranning kech kelgan javobi tashlanadi
+function bet(fn, ...a) { EKRAN++; JIM = false; fon('qora'); tarix.push([fn, a]); $('#orq').style.display = tarix.length > 1 ? '' : 'none'; window.scrollTo(0, 0); fn(...a); }
 function orqaga() { tarix.pop(); const x = tarix.pop(); if (x) bet(x[0], ...x[1]); }
 function tabla(t) { document.querySelectorAll('.tab button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); tarix = []; bet({ asosiy, xabarlar, dastafka, ai: aiBet, koproq }[t]); }
 document.querySelectorAll('.tab button').forEach(b => b.onclick = () => tabla(b.dataset.t));
