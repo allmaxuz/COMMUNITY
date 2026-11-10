@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html><head><base target="_top"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--y:#4FBF5E;--q:#151515;--q2:#1d1d1d;--q3:#262626;--k:#8a8a8a;--r:#ff6b6b;--s:#ffcc4d;--b:#2AABEE}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;background:#0d0d0d;color:#fff;font-size:14px;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><g fill='none' stroke='%234FBF5E' stroke-opacity='.07' stroke-width='6'><path d='M30 20 10 40l20 20M55 20 35 40l20 20'/><path d='M90 70 70 90l20 20M115 70 95 90l20 20'/></g></svg>");}
+.top{position:sticky;top:0;z-index:5;background:rgba(13,13,13,.92);backdrop-filter:blur(8px);padding:12px 14px 8px;display:flex;align-items:center;gap:10px}
+.lg{width:34px;height:34px;border-radius:10px;background:var(--y);display:flex;align-items:center;justify-content:center;color:var(--q);font-weight:900;font-size:20px;flex:none}
+.top b{font-size:16px;display:block}.top small{color:var(--k);font-size:11px}
+.top .orq{margin-left:auto;background:var(--q3);border:0;color:#fff;border-radius:10px;padding:7px 11px;font-size:13px}
+main{padding:0 12px 90px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 13px;border-radius:20px;background:var(--q3);color:#ddd;font-size:12.5px;border:0}
+.chip.on{background:var(--y);color:var(--q);font-weight:700}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.k{background:var(--q2);border:1px solid #2b2b2b;border-radius:16px;padding:11px 12px}.k small{display:block;color:var(--k);font-size:11px}
+.k b{font-size:22px;letter-spacing:-.5px;display:block;margin:2px 0}.k i{font-style:normal;font-size:11px;color:#bbb}
+.up{color:var(--y)!important}.dn{color:var(--r)!important}.yl{color:var(--s)!important}
+.kt{background:var(--q2);border:1px solid #2b2b2b;border-radius:16px;padding:12px;margin:8px 0}
+.kt h4{margin:0 0 8px;font-size:14px}
+.it{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #2a2a2a}.it:last-child{border:0}
+.av{width:36px;height:36px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.ig{background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7)}.tg{background:var(--b)}
+.it .m{flex:1;min-width:0}.it .m b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.it .m span{color:#aaa;font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .r{text-align:right;font-size:11px;color:#aaa;flex:none}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px}.pr{background:var(--r);color:#fff}.py{background:var(--s);color:var(--q)}.pg{background:var(--y);color:var(--q)}.pb{background:var(--b);color:#fff}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:12px;background:var(--y);color:var(--q);font-weight:800;font-size:14px;margin:8px 0}
+.btn2{background:var(--q3);color:#fff;font-weight:600}.btn.kichik{display:inline-block;width:auto;padding:7px 12px;font-size:12.5px;margin:3px 3px 3px 0}
+input,select,textarea{width:100%;background:#111;border:1px solid #333;border-radius:12px;color:#fff;padding:10px 12px;font-size:14px;font-family:inherit;margin:4px 0}
+textarea{min-height:90px}
+label{font-size:11.5px;color:var(--k);display:block;margin-top:6px}
+.ms{max-width:82%;border-radius:16px;padding:8px 12px;margin:5px 0;font-size:13.5px;line-height:1.4;white-space:pre-wrap;word-break:break-word}
+.ms small{display:block;font-size:10px;opacity:.6;margin-top:3px}
+.mm{background:#262626}.mb{background:var(--y);color:var(--q);margin-left:auto}
+.kun{text-align:center;font-size:11px;color:var(--k);margin:10px 0 4px}
+.tab{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(10,10,10,.97);border-top:1px solid #222;padding:6px 2px 12px;z-index:9}
+.tab button{flex:1;background:none;border:0;color:#8a8a8a;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab button em{font-style:normal;font-size:20px}.tab .on{color:var(--y);font-weight:700}
+.ai{background:var(--y);color:var(--q)!important;border-radius:16px;margin-top:-16px;padding:6px 0;box-shadow:0 4px 14px rgba(79,191,94,.35)}
+.bar{height:8px;border-radius:5px;background:var(--y);display:inline-block;vertical-align:middle;margin:0 6px}
+.yuk{text-align:center;color:var(--k);padding:30px}
+.xato{background:#3a1515;border:1px solid #702828;color:#ffb3b3;border-radius:12px;padding:10px;margin:8px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;z-index:20}
+.modal>div{background:#181818;width:100%;border-radius:22px 22px 0 0;padding:16px;max-height:88vh;overflow:auto}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-weight:600;z-index:30;max-width:90%}
+.tv{background:#111;border:1px solid #2b2b2b;border-radius:12px;padding:8px;margin:6px 0}
+.row{display:flex;gap:6px}.row>*{flex:1}
+details{background:var(--q2);border:1px solid #2b2b2b;border-radius:14px;padding:10px 12px;margin:6px 0}summary{font-weight:700}
+details p{white-space:pre-wrap;color:#ccc;font-size:13px;line-height:1.5}
+</style></head>
+<body>
+<div class="top"><div class="lg">«</div><div><b id="sarl">Community</b><small id="ost">yuklanmoqda…</small></div><button class="orq" id="orq" style="display:none" onclick="orqaga()">←</button></div>
+<main id="ekran"><div class="yuk">⏳</div></main>
+<nav class="tab" id="tab">
+ <button data-t="asosiy" class="on"><em>🏠</em>Asosiy</button><button data-t="xabarlar"><em>💬</em>Xabarlar</button>
+ <button data-t="dastafka"><em>📦</em>Dastafka</button><button data-t="ai"><em class="ai">🤖</em>AI</button><button data-t="koproq"><em>☰</em>Ko'proq</button>
+</nav>
+<script>
+let INIT = '', MEN = null, SHB = null, tarix = [];
+const $ = s => document.querySelector(s), E = $('#ekran');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pul = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const vaqt = ms => { const d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); };
+const sana = ms => { const d = new Date(ms); return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2); };
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+// Ma'lumot manzili: GitHub'da — ?api=… (bot beradi, KONTENT ilovasi bilan bir xil); Apps Script ichida — google.script.run
+const GAS = !!(window.google && google.script && google.script.run);
+const API_URL = (() => { const q = new URLSearchParams(location.search); let u = q.get('api') || q.get('s') || ''; try { if (u) localStorage.setItem('cm_api', u); else u = localStorage.getItem('cm_api') || ''; } catch (e) {} return u; })();
+function api(m, a) {
+  if (GAS && JIM) a = Object.assign({}, a, { jim: 1 });
+  if (GAS) return new Promise((ok, no) => google.script.run.withSuccessHandler(s => { const j = JSON.parse(s); j.ok ? ok(j.r) : no(new Error(j.xato)); }).withFailureHandler(e => no(e)).api(INIT, m, a || {}));
+  if (JIM) a = Object.assign({}, a, { jim: 1 });
+  return fetch(API_URL, { method: 'POST', body: JSON.stringify({ init: INIT, metod: m, a: a || {} }) })   // text/plain — CORS so'rovisiz
+    .then(r => { if (!r.ok) throw new Error('Server javob bermadi (' + r.status + ')'); return r.json(); })
+    .then(j => { if (!j.ok) throw new Error(j.xato); return j.r; })
+    .catch(e => { throw new Error(/Failed to fetch|NetworkError|Load failed/i.test(e.message) ? "Internet yoki server bilan aloqa yo'q — qayta urinib ko'ring" : e.message); });
+}
+function xato(e) { E.insertAdjacentHTML('afterbegin', '<div class="xato">❌ ' + esc(e.message || e) + '</div>'); }
+let JIM = false;                                               // jim yangilanish: «yuklanmoqda» ko'rsatilmaydi
+function yuk() { if (!JIM) E.innerHTML = '<div class="yuk">⏳ yuklanmoqda…</div>'; }
+// Ochiq ekran (Asosiy, Xabarlar, yozishma) har 15 soniyada o'zi yangilanadi. Ilova yopiq/fon'da, oyna ochiq yoki yozayotganda — yangilanmaydi
+const YANGILASH_SON = 15;
+setInterval(() => {
+  if (document.hidden || JIM || document.querySelector('.modal')) return;
+  const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
+  const t = tarix[tarix.length - 1]; if (!t || [asosiy, xabarlar, yozishma].indexOf(t[0]) < 0) return;
+  const y = window.scrollY, pastda = window.innerHeight + y >= document.body.scrollHeight - 40;
+  JIM = true;
+  Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { JIM = false; window.scrollTo(0, t[0] === yozishma && pastda ? document.body.scrollHeight : y); });
+}, YANGILASH_SON * 1000);
+function sarl(a, b) { $('#sarl').textContent = a; $('#ost').textContent = b || ''; }
+function bet(fn, ...a) { tarix.push([fn, a]); $('#orq').style.display = tarix.length > 1 ? '' : 'none'; window.scrollTo(0, 0); fn(...a); }
+function orqaga() { tarix.pop(); const x = tarix.pop(); if (x) bet(x[0], ...x[1]); }
+function tabla(t) { document.querySelectorAll('.tab button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); tarix = []; bet({ asosiy, xabarlar, dastafka, ai: aiBet, koproq }[t]); }
+document.querySelectorAll('.tab button').forEach(b => b.onclick = () => tabla(b.dataset.t));
+function modal(html) { const m = document.createElement('div'); m.className = 'modal'; m.innerHTML = '<div>' + html + '</div>'; m.onclick = e => { if (e.target === m) m.remove(); }; document.body.appendChild(m); return m; }
+function soraMatn(savol, variant) {
+  return new Promise(ok => {
+    const m = modal('<b>' + esc(savol) + '</b>' + variant.map(v => '<div class="tv" data-v="' + esc(v) + '">' + esc(v) + '</div>').join('') + '<input id="sm"><button class="btn" id="smok">OK</button>');
+    m.querySelectorAll('.tv').forEach(d => d.onclick = () => { m.querySelector('#sm').value = d.dataset.v; });
+    m.querySelector('#smok').onclick = () => { const v = m.querySelector('#sm').value.trim(); m.remove(); ok(v); };
+  });
+}
+function tasdiq(matn) { return new Promise(ok => { const m = modal('<p style="white-space:pre-wrap">' + esc(matn) + '</p><button class="btn" id="ha">✅ Ha</button><button class="btn btn2" id="yoq">❌ Bekor</button>'); m.querySelector('#ha').onclick = () => { m.remove(); ok(true); }; m.querySelector('#yoq').onclick = () => { m.remove(); ok(false); }; }); }
+const ozg = x => x == null ? '' : (x >= 0 ? '<span class="up">▲ ' + x + '%</span>' : '<span class="dn">▼ ' + Math.abs(x) + '%</span>');
+const chipq = (l, on, fn) => '<div class="chips">' + l.map(([k, t]) => '<button class="chip' + (k === on ? ' on' : '') + '" onclick="' + fn + '(\'' + k + '\')">' + t + '</button>').join('') + '</div>';
+
+// ---------------- 🏠 Asosiy ----------------
+let DAVR = 'bugun';
+async function asosiy(d) {
+  DAVR = d || DAVR; sarl('Community', MEN ? MEN.ism + ' · ' + MEN.rol : ''); yuk();
+  try {
+    const r = await api('asosiy', { davr: DAVR });
+    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') +
+      '<div class="g2">' +
+      k('📸 Instagram', r.ig, ozg(r.ozgarish.ig)) + k('✈️ Telegram', r.tg, ozg(r.ozgarish.tg)) +
+      k('📦 Dastafka', r.dastafka, pul(r.summa) + " so'm " + ozg(r.ozgarish.dastafka)) + k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx ?? '—') + ' $') +
+      k('⏳ Javob', r.javobOrt == null ? '—' : r.javobOrt + ' daq', '🔴 kech: ' + r.kech) + k('🗨 Komment', r.komment, 'botdan javob: ' + r.kommentBot) +
+      k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('↩️ Qaytdi', r.qaytdi, r.qaytFoiz == null ? '' : r.qaytFoiz + '%') + '</div>' +
+      '<div class="kt"><h4>⏳ Hozir javob kutyapti: ' + r.javobsizHozir + '</h4>' + (r.javobsizlar.map(chatQator).join('') || '<span style="color:#888">✅ hech kim</span>') + '</div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+const k = (a, b, c) => '<div class="k"><small>' + a + '</small><b>' + b + '</b><i>' + (c || '') + '</i></div>';
+
+// ---------------- 💬 Xabarlar ----------------
+let XF = 'hammasi', XQ = '';
+function chatQator(c) {
+  const j = c.javobsiz ? '<span class="pill ' + (c.javobsiz.ogoh === 'qizil' ? 'pr' : 'py') + '">' + c.javobsiz.daq + ' daq</span>' : '';
+  return '<div class="it" onclick="bet(yozishma,' + esc(JSON.stringify(c.kanal)) + ',' + esc(JSON.stringify(c.conv)) + ',' + esc(JSON.stringify(c.mijoz)) + ')"><div class="av ' + (c.kanal === 'Instagram' ? 'ig' : 'tg') + '">' + esc((c.mijoz || '?')[0].toUpperCase()) + '</div>' +
+    '<div class="m"><b>' + esc(c.mijoz) + '</b><span>' + (c.kim === 'Biz' ? '🏪 ' : '') + esc(c.matn) + '</span></div><div class="r">' + sana(c.ms) + ' ' + vaqt(c.ms) + '<br>' + j + '</div></div>';
+}
+async function xabarlar(f) {
+  XF = f || XF; sarl('Xabarlar', 'Instagram + Telegram');
+  if (XF === 'komment') return kommentlar();
+  E.innerHTML = '<input id="xq" placeholder="🔎 Nik, ism yoki telefon" value="' + esc(XQ) + '">' +
+    chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], XF, 'xabarlar') + '<div id="xl" class="kt"><div class="yuk">⏳</div></div>';
+  $('#xq').onchange = e => { XQ = e.target.value; xabarlar(); };
+  try { const r = await api('chatlar', { filtr: XF, q: XQ }); $('#xl').innerHTML = (r.royxat.map(chatQator).join('') || '<span style="color:#888">Topilmadi</span>') + '<div style="color:#777;font-size:11px;margin-top:6px">' + r.jami + ' ta suhbat</div>'; }
+  catch (e) { xato(e); }
+}
+async function yozishma(kanal, conv, mijoz) {
+  sarl(mijoz, kanal); yuk();
+  try {
+    const r = await api('yozishma', { kanal, conv });
+    let kun = '', h = '';
+    r.xabarlar.forEach(m => {
+      const s = sana(m.ms); if (s !== kun) { kun = s; h += '<div class="kun">' + s + '</div>'; }
+      const ovoz = m.ovoz ? '\n' + (m.turi === 'rasm' ? '📷 ' : '🎤 ') + m.ovoz : (!m.matn && m.turi && m.turi !== 'matn' ? '[' + m.turi + ']' : '');
+      h += '<div class="ms ' + (m.kim === 'Biz' ? 'mb' : 'mm') + '">' + esc(m.matn) + esc(ovoz) + '<small>' + vaqt(m.ms) + (m.kim === 'Biz' ? ' · 🏪 Biz' : '') + '</small></div>';
+    });
+    E.innerHTML = (h || '<div class="yuk">Xabar topilmadi</div>') +
+      '<div class="row" style="position:sticky;bottom:80px"><button class="btn" onclick="tabla(\'dastafka\')">📦 Dastafka</button><button class="btn btn2" onclick="bet(karta,' + esc(JSON.stringify(mijoz.split(' @')[0])) + ')">👤 Karta</button><button class="btn btn2" onclick="aiSor(' + esc(JSON.stringify(mijoz + ' ga nima deb javob yozay? Yozishmasini o\'qib taklif ber.')) + ')">🤖 Nima deb yozay</button></div>';
+    window.scrollTo(0, document.body.scrollHeight);
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+
+// ---------------- 🗨 Kommentlar ----------------
+let KM = [];
+async function kommentlar() {
+  E.innerHTML = chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], 'komment', 'xabarlar') + '<div id="kl"><div class="yuk">⏳ Instagram\'da tekshirilmoqda…</div></div>';
+  try {
+    const r = await api('kommentlar'); KM = r.royxat; window.TJ = r.tayyor;
+    const v = {}; KM.forEach(x => (v[x.havola || x.kontent] = v[x.havola || x.kontent] || []).push(x));
+    $('#kl').innerHTML = (Object.keys(v).map(h => '<div class="kt"><h4>🎬 ' + esc(v[h][0].kontent || 'Video') + '</h4>' + (v[h][0].havola ? '<a style="color:#8ab4f8;font-size:12px" href="' + esc(v[h][0].havola) + '" target="_blank">' + esc(v[h][0].havola) + ' ↗</a>' : '') +
+      v[h].map(x => '<div class="it"><div class="m"><b>@' + esc(x.muallif) + ' · ' + sana(x.ms) + '</b><span style="white-space:normal;color:#ddd">' + esc(x.matn) + '</span></div><button class="btn kichik" onclick="kmYoz(\'' + x.id + '\')">✍️</button></div>').join('') + '</div>').join('') ||
+      '<div class="kt">✅ Javobsiz matnli izoh yo\'q</div>') + (KM.length > 1 ? '<button class="btn btn2" onclick="aiSor(\'Javobsiz kommentlarning hammasiga javob tayyorla\')">🤖 Hammasiga AI javob</button>' : '');
+  } catch (e) { $('#kl').innerHTML = ''; xato(e); }
+}
+function kmYoz(id) {
+  const x = KM.find(k => k.id === id);
+  const m = modal('<b>✍️ @' + esc(x.muallif) + ' ga javob</b><p style="color:#bbb">«' + esc(x.matn) + '»</p><textarea id="kt" placeholder="Javob…"></textarea>' +
+    '<div class="row"><button class="btn btn2" id="kv">🤖 AI variant</button><button class="btn btn2" id="tj">💬 Tayyor</button></div><div id="kvl"></div><button class="btn" id="ky">✅ Yuborish</button>');
+  m.querySelector('#kv').onclick = async () => { m.querySelector('#kvl').innerHTML = '<div class="yuk">⏳</div>'; try { const v = await api('kmVariant', { id }); m.querySelector('#kvl').innerHTML = v.map(t => '<div class="tv" onclick="document.getElementById(\'kt\').value=this.textContent">' + esc(t) + '</div>').join(''); } catch (e) { m.querySelector('#kvl').innerHTML = '<div class="xato">' + esc(e.message) + '</div>'; } };
+  m.querySelector('#tj').onclick = () => { m.querySelector('#kvl').innerHTML = (window.TJ || []).map(t => '<div class="tv" onclick="document.getElementById(\'kt\').value=this.dataset.m" data-m="' + esc(t.matn) + '"><b>' + esc(t.nomi) + '</b><br>' + esc(t.matn) + '</div>').join(''); };
+  m.querySelector('#ky').onclick = async () => {
+    const t = m.querySelector('#kt').value.trim(); if (!t) return toast('Matn yozing');
+    if (!await tasdiq('Instagram\'da hammaga ko\'rinadi:\n\n«' + t + '»\n\nYuborilsinmi?')) return;
+    try { await api('kmJavob', { id, matn: t }); m.remove(); toast('✅ Yuborildi'); kommentlar(); } catch (e) { toast('❌ ' + e.message); }
+  };
+}
+
+// ---------------- 📦 Dastafka ----------------
+let DS = { tv: [], m: {} }, DSF = 'yangi';
+async function dastafka(f) {
+  DSF = f || DSF; sarl('Dastafka', MEN ? MEN.sotuvchi || MEN.ism : '');
+  if (!SHB) try { SHB = await api('shablon'); } catch (e) { return xato(e); }
+  E.innerHTML = chipq([['yangi', '➕ Yangi'], ['hammasi', 'Ro\'yxat'], ['Yangi', '🆕'], ["Yo'lda", '🚚'], ['Qaytdi', '↩️']], DSF, 'dastafka') + '<div id="dsb"></div>';
+  if (DSF === 'yangi') return dsForma();
+  $('#dsb').innerHTML = '<div class="yuk">⏳</div>';
+  try {
+    const r = await api('dastafkalar', { filtr: DSF });
+    $('#dsb').innerHTML = r.royxat.map(x => '<div class="kt"><b>№' + x.no + ' · ' + esc(x.sana) + ' · ' + esc(x.ism) + '</b> <span class="pill ' + ({ 'Yangi': 'py', "Yo'lda": 'pb', 'Yetkazildi': 'pg', 'Qaytdi': 'pr', "O'chirildi": 'pr' }[x.holat] || '') + '">' + esc(x.holat) + '</span><br>' +
+      '<span style="color:#bbb;font-size:12.5px">' + esc(x.mah) + '<br>💰 ' + esc(x.summa) + ' · 🛍 ' + esc(x.sotuvchi) + ' · ' + esc(x.vil) + (x.trek ? ' · trek ' + esc(x.trek) : '') + (x.sabab ? '<br><span class="dn">' + esc(x.sabab) + '</span>' : '') + '</span><br>' +
+      '<button class="btn kichik btn2" onclick="bet(qidir,' + esc(JSON.stringify(x.tel)) + ')">✏️</button>'+'<button class="btn kichik btn2" onclick="dsHolat(' + x.no + ',\'Yo\\\'lda\')">🚚 Yo\'lda</button><button class="btn kichik" onclick="dsHolat(' + x.no + ',\'Yetkazildi\')">✅ Yetkazildi</button><button class="btn kichik btn2" onclick="dsHolat(' + x.no + ',\'Qaytdi\')">↩️ Qaytdi</button>' + (x.holat === "O'chirildi" ? '' : '<button class="btn kichik btn2" onclick="dsOchir(' + x.no + ')">🗑</button>') + '</div>').join('') || '<div class="kt">Bo\'sh</div>';
+  } catch (e) { $('#dsb').innerHTML = ''; xato(e); }
+}
+async function dsOchir(no) {
+  if (!await tasdiq('🗑 №' + no + " ni o'chiraymi?\n\nCommunity Hisoboti'dagi qatorlari tozalanadi.")) return;
+  try { const r = await api('dsOchir', { no }); toast("✅ №" + no + " o'chirildi"); dastafka(); } catch (e) { toast('❌ ' + e.message); }
+}
+async function dsHolat(no, h) {
+  let trek = '', sabab = '';
+  if (h === "Yo'lda") trek = await soraMatn('🚚 Trek raqami (bo\'lmasa bo\'sh qoldiring)', []);
+  if (h === 'Qaytdi') { sabab = await soraMatn('↩️ Nega qaytdi?', SHB.sabablar); if (!sabab) return; }
+  if (!await tasdiq('№' + no + ' → ' + h + (trek ? ' · ' + trek : '') + (sabab ? ' · ' + sabab : ''))) return;
+  try { await api('holat', { no, holat: h, trek, sabab }); toast('✅ Saqlandi'); dastafka(); } catch (e) { toast('❌ ' + e.message); }
+}
+const opt = (l, v) => '<option value=""></option>' + l.map(x => '<option' + (x === v ? ' selected' : '') + '>' + esc(x) + '</option>').join('');
+function dsForma() {
+  const t = DS.tv, m = DS.m;
+  $('#dsb').innerHTML = '<div class="kt"><label>📷 Narx yorlig\'i rasmi (bir nechta bo\'lishi mumkin)</label><input type="file" id="rasm" accept="image/*" capture="environment" multiple>' +
+    '<div id="ocr"></div><button class="btn btn2" onclick="dsTovarQosh()">➕ Qo\'lda tovar</button></div>' +
+    t.map((x, i) => '<div class="kt"><b>' + (i + 1) + '-tovar</b> <button class="btn kichik btn2" style="float:right" onclick="DS.tv.splice(' + i + ',1);dsForma()">🗑</button>' +
+      '<div class="row"><div><label>Barkod</label><input value="' + esc(x.barkod) + '" onchange="DS.tv[' + i + '].barkod=this.value"></div><div><label>Narx</label><input inputmode="numeric" value="' + esc(x.narx) + '" onchange="DS.tv[' + i + '].narx=this.value"></div></div>' +
+      '<label>Model (yorliqdagi nom)</label><input value="' + esc(x.model) + '" onchange="DS.tv[' + i + '].model=this.value">' +
+      '<label>Mahsulot</label><select onchange="DS.tv[' + i + '].mahsulot=this.value">' + opt(SHB.mah, x.mahsulot) + '</select>' +
+      '<div class="row"><div><label>O\'lcham</label><select onchange="DS.tv[' + i + '].olcham=this.value">' + opt(['—'].concat(SHB.olcham), x.olcham) + '</select></div><div><label>Rang</label><select onchange="DS.tv[' + i + '].rang=this.value">' + opt(SHB.rang, x.rang) + '</select></div><div style="flex:.5"><label>Soni</label><input inputmode="numeric" value="' + (x.soni || 1) + '" onchange="DS.tv[' + i + '].soni=this.value"></div></div></div>').join('') +
+    '<div class="kt"><label>📞 Telefon</label><input id="tel" inputmode="tel" value="' + esc(m.telefon || '') + '" placeholder="94 785 85 52">' +
+    '<label>👤 Ism</label><input id="ism" value="' + esc(m.ism || '') + '"><label>📍 Viloyat</label><select id="vil">' + opt(SHB.vil, m.viloyat) + '</select>' +
+    '<label>🏠 Manzil</label><input id="manzil" value="' + esc(m.manzil || '') + '"><label>📲 Qayerdan yozgan</label><select id="ilova">' + opt(SHB.ilovalar, m.ilova) + '</select>' +
+    (MEN.sotuvchi ? '' : '<label>🛍 Sotuvchi</label><select id="sotuvchi">' + opt(SHB.sotuvchi, m.sotuvchi) + '</select>') + '</div>' +
+    '<button class="btn" onclick="dsYoz()">✅ Yozish</button>';
+  $('#rasm').onchange = dsRasm;
+  $('#tel').onchange = async e => { DS.m.telefon = e.target.value; try { const g = await api('telTop', { tel: e.target.value }); if (g && !$('#ism').value) { $('#ism').value = g.ism; $('#manzil').value = g.manzil; $('#vil').value = g.vil; toast('↺ Oldingi mijoz: ' + g.ism); } } catch (x) {} };
+  ['ism', 'vil', 'manzil', 'ilova', 'sotuvchi'].forEach(id => { const el = $('#' + id); if (el) el.onchange = () => DS.m[id === 'vil' ? 'viloyat' : id] = el.value; });
+}
+function dsTovarQosh() { DS.tv.push({ barkod: '', narx: '', model: '', mahsulot: '', olcham: '', rang: '', soni: 1 }); dsForma(); }
+async function dsRasm(e) {
+  const fl = [...e.target.files]; $('#ocr').innerHTML = '<div class="yuk">⏳ yorliq o\'qilmoqda…</div>';
+  for (const f of fl) {
+    try {
+      const b64 = await kichrayt(f), r = await api('ocr', { b64, mime: 'image/jpeg' });
+      r.forEach(x => DS.tv.push({ barkod: x.barkod || x.xatoBk, narx: x.narx, model: x.nom, mahsulot: x.taklif >= 0 ? SHB.mah[x.taklif] : '', olcham: '', rang: '', soni: 1, xato: !x.barkod }));
+      if (!r.length) toast('Rasmda barkod topilmadi');
+    } catch (x) { toast('❌ ' + x.message); }
+  }
+  dsForma(); if (DS.tv.some(x => x.xato)) toast('⚠️ Ba\'zi barkodlar tekshiruvdan o\'tmadi — tekshiring');
+}
+function kichrayt(f) {
+  return new Promise((ok, no) => { const img = new Image(), u = URL.createObjectURL(f); img.onload = () => { const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = img.width * k; c.height = img.height * k; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .85).split(',')[1]); URL.revokeObjectURL(u); }; img.onerror = no; img.src = u; });
+}
+async function dsYoz() {
+  const m = { telefon: $('#tel').value, ism: $('#ism').value, viloyat: $('#vil').value, manzil: $('#manzil').value, ilova: $('#ilova').value, sotuvchi: $('#sotuvchi') ? $('#sotuvchi').value : '' };
+  DS.m = m;
+  const tv = DS.tv.map(x => ({ barkod: String(x.barkod).replace(/\D/g, ''), narx: Number(String(x.narx).replace(/\D/g, '')), model: x.model, mahsulot: x.mahsulot, olcham: x.olcham, rang: x.rang, soni: Number(x.soni) || 1 }));
+  if (!tv.length) return toast('Kamida 1 tovar');
+  const jami = tv.reduce((a, x) => a + (x.narx % 1000 === 900 ? x.narx + 100 : x.narx) * x.soni, 0);
+  if (!await tasdiq('📦 Dastafka\n' + tv.map((x, i) => (i + 1) + ') ' + x.mahsulot + ' · ' + x.model + ' · ' + x.olcham + ' · ' + x.rang + ' · ' + x.soni + ' ta · ' + pul(x.narx)).join('\n') +
+    '\n\n👤 ' + m.ism + ' · ' + m.telefon + '\n📍 ' + m.viloyat + ', ' + m.manzil + '\n📲 ' + m.ilova + '\n💰 Jami: ' + pul(jami) + '\n\n(900 bilan tugagan narxga +100 qo\'shiladi)')) return;
+  if (DS.yozilmoqda) return;                                   // tugma 2-marta bosilsa — e'tiborsiz
+  DS.yozilmoqda = true;
+  try {
+    const so = Object.assign({ tovarlar: tv }, m);
+    let r = await api('dastafkaYoz', so);
+    if (r && r.takror) {                                        // shu kuni xuddi shu dastafka bor → so'raymiz
+      if (!await tasdiq('⚠️ Xuddi shu dastafka bugun ' + r.takror.vaqt + ' da yozilgan (№' + r.takror.no + ').\n\nYana bir marta yozaymi?')) { toast("Yozilmadi"); return; }
+      r = await api('dastafkaYoz', Object.assign(so, { majbur: true }));
+    }
+    toast('✅ №' + r.no + ' yozildi'); DS = { tv: [], m: {} }; dastafka('hammasi');
+  } catch (e) { toast('❌ ' + e.message); }
+  finally { DS.yozilmoqda = false; }
+}
+
+// ---------------- 🤖 AI ----------------
+let AIX = [];
+function aiBet() {
+  sarl('AI yordamchi', 'bazadan javob beradi · o\'zgartirish — ✅ bilan');
+  E.innerHTML = '<div id="aic">' + (AIX.length ? '' : '<div class="kt" style="color:#bbb;font-size:13px">Masalan:<br>• Bu hafta qaysi o\'lcham ko\'p ketdi?<br>• Javobsiz kommentlarga javob tayyorla<br>• sardor_77 ga nima deb yozay?<br>• 11-dastafka yo\'lga chiqdi, trek BTS4521<br>• Ertaga 11 da Sherzodga qo\'ng\'iroqni eslat</div>') + '</div>' +
+    '<div style="position:sticky;bottom:80px;display:flex;gap:6px;background:#0d0d0d;padding-top:6px"><input id="aiq" placeholder="✍️ Savol yoki buyruq…" style="flex:1"><button class="btn kichik" onclick="aiYubor()" style="margin:4px 0">➤</button><button class="btn kichik btn2" onclick="aiYangi()" style="margin:4px 0">🧹</button></div>';
+  AIX.forEach(aiChiz);
+  $('#aiq').onkeydown = e => { if (e.key === 'Enter') aiYubor(); };
+}
+function aiChiz(x) {
+  const c = $('#aic'); if (!c) return;
+  if (x.t === 'u') c.insertAdjacentHTML('beforeend', '<div class="ms mb">' + esc(x.m) + '</div>');
+  else if (x.t === 'a') c.insertAdjacentHTML('beforeend', '<div class="ms mm">' + esc(x.m) + '</div>');
+  else if (x.t === 'p') c.insertAdjacentHTML('beforeend', '<div class="kt" id="p' + x.n + '"><div style="white-space:pre-wrap;font-size:13px">' + esc(x.k) + '</div>' + (x.h ? '<div style="margin-top:6px">' + esc(x.h) + '</div>' : '<button class="btn kichik" onclick="aiOk(\'' + x.n + '\')">✅ Ha</button><button class="btn kichik btn2" onclick="aiNo(\'' + x.n + '\')">❌ Yo\'q</button>') + '</div>');
+  window.scrollTo(0, document.body.scrollHeight);
+}
+function aiSor(t) { tabla('ai'); $('#aiq').value = t; aiYubor(); }
+async function aiYubor() {
+  const t = $('#aiq').value.trim(); if (!t) return; $('#aiq').value = '';
+  const u = { t: 'u', m: t }; AIX.push(u); aiChiz(u);
+  $('#aic').insertAdjacentHTML('beforeend', '<div class="ms mm" id="kut">⏳</div>');
+  try { const r = await api('ai', { matn: t }); $('#kut') && $('#kut').remove(); const a = { t: 'a', m: r.matn }; AIX.push(a); aiChiz(a); r.takliflar.forEach(p => { const x = { t: 'p', n: p.n, k: p.korinish }; AIX.push(x); aiChiz(x); }); }
+  catch (e) { $('#kut') && $('#kut').remove(); const a = { t: 'a', m: '❌ ' + e.message }; AIX.push(a); aiChiz(a); }
+}
+async function aiOk(n) { const x = AIX.find(y => y.n === n); try { const r = await api('aiOk', { n }); x.h = r.matn; } catch (e) { x.h = '❌ ' + e.message; } aiBet(); }
+async function aiNo(n) { const x = AIX.find(y => y.n === n); await api('aiNo', { n }).catch(() => {}); x.h = '❌ Bekor qilindi'; aiBet(); }
+async function aiYangi() { await api('aiYangi').catch(() => {}); AIX = []; aiBet(); }
+
+// ---------------- ☰ Ko'proq ----------------
+function koproq() {
+  sarl("Ko'proq", MEN.ism + ' · ' + MEN.rol);
+  const l = [['🔎', 'Qidirish va tahrir', 'telefon, ism, barkod', 'qidir'], ['📊', 'Savdo', "mahsulot, o'lcham, sotuvchi", 'savdo'], ['📞', "Qo'ng'iroqlar", 'MetaSell', 'qongiroq'],
+    ['👤', 'Mijoz kartasi', 'telefon yoki nik', 'kartaSor'], ['⏳', 'Javob tezligi', 'kim necha daqiqada', 'javobTez'], ['🔁', 'Qayta yozish', 'olmagan, lekin qiziqqanlar', 'qayta'],
+    ['⏰', 'Eslatmalar', 'shaxsiy', 'eslatma'], ['💬', 'Tayyor javoblar', 'nusxa olish', 'tayyor'], ['⬇️', 'Yuklab olish', 'Excel botga keladi', 'yuklab']];
+  if (MEN.rol !== 'Sotuvchi') l.push(['👥', 'Jamoa', 'odamlar va kodlar', 'jamoa'], ['⚙️', 'Tizim', 'holat, jurnal, tahrirlar', 'tizim']);
+  if (MEN.rol === 'Ega') l.push(['📢', "E'lon", 'jamoaga xabar', 'elon']);
+  l.push(['📖', "Qo'llanma", "har bo'lim qanday ishlaydi", 'qollanma']);
+  E.innerHTML = '<div class="kt">' + l.map(([i, n, s, f]) => '<div class="it" onclick="bet(' + f + ')"><div class="av" style="background:' + (f === 'qollanma' ? 'var(--s)' : 'var(--y)') + ';color:#151515">' + i + '</div><div class="m"><b>' + n + '</b><span>' + s + '</span></div><div class="r">›</div></div>').join('') + '</div>';
+}
+async function qidir(q) {
+  sarl('Qidirish va tahrir', 'telefon · ism · barkod');
+  E.innerHTML = '<input id="qq" placeholder="🔎 94 785 85 52" value="' + esc(q || '') + '"><div id="ql"></div>';
+  $('#qq').onchange = e => qidir(e.target.value);
+  if (!q) return;
+  $('#ql').innerHTML = '<div class="yuk">⏳</div>';
+  try {
+    const r = await api('qidir', { q }); window.QR = r;
+    $('#ql').innerHTML = r.map((g, gi) => '<div class="kt"><b>' + esc(g.sana) + ' · ' + esc(g.ism) + '</b> · ' + esc(g.ilova) + ' · ' + esc(g.sotuvchi) + '<br><span style="color:#aaa;font-size:12px">' + esc(g.tel) + ' · ' + esc(g.vil) + ', ' + esc(g.manzil) + '</span>' +
+      g.tovar.map((t, i) => '<div style="font-size:12.5px;margin-top:4px">' + esc(t.mah) + ' · ' + esc(t.model) + ' · ' + esc(t.olcham) + ' · ' + esc(t.rang) + ' · ' + t.soni + ' × ' + pul(t.narx) + ' <span style="color:#777">' + g.rows[i] + '-qator</span></div>').join('') +
+      '<button class="btn kichik btn2" onclick="tahrir(' + gi + ')">✏️ Tahrirlash</button></div>').join('') || '<div class="kt">Topilmadi</div>';
+  } catch (e) { $('#ql').innerHTML = ''; xato(e); }
+}
+const TZ = { 11: 'Ismi', 12: 'Telefoni', 13: 'Viloyat', 14: 'Manzil', 10: 'Ilova', 15: 'Sotuvchi', 2: 'Mahsulot', 3: 'Model', 4: "O'lcham", 5: 'Rangi', 8: 'Narx', 7: 'Soni', 6: 'Barkod' };
+function tahrir(gi) {
+  const g = window.QR[gi];
+  const m = modal('<b>✏️ Nimani o\'zgartiramiz?</b><label>Maydon</label><select id="tc">' + Object.keys(TZ).map(c => '<option value="' + c + '">' + TZ[c] + '</option>').join('') + '</select>' +
+    '<label>Qaysi qator (mahsulot maydonlari uchun)</label><select id="tr">' + g.rows.map((r, i) => '<option value="' + r + '">' + r + ' · ' + esc(g.tovar[i].mah) + '</option>').join('') + '</select>' +
+    '<label>Yangi qiymat</label><input id="tq"><button class="btn" id="tok">✅ Saqlash</button>');
+  m.querySelector('#tok').onclick = async () => {
+    const c = Number(m.querySelector('#tc').value), mijoz = [10, 11, 12, 13, 14, 15].indexOf(c) >= 0, rows = mijoz ? g.rows : [Number(m.querySelector('#tr').value)];
+    const v = m.querySelector('#tq').value.trim(); if (!v) return toast('Qiymat yozing');
+    if (!await tasdiq(TZ[c] + ' → ' + v + '\n(' + rows.join(', ') + '-qator)')) return;
+    const snap = JSON.stringify(JSON.parse(g.snap).filter((x, i) => rows.indexOf(g.rows[i]) >= 0));
+    try { const r = await api('tahrir', { rows, col: c, qiymat: v, snap }); m.remove(); toast('✅ Saqlandi: ' + r.qiymat); qidir($('#qq').value); } catch (e) { toast('❌ ' + e.message); }
+  };
+}
+let SV = 'oy';
+async function savdo(d) {
+  SV = d || SV; sarl('Savdo', ''); yuk();
+  try {
+    const s = await api('savdo', { davr: SV }), mx = a => Math.max(1, ...a.map(x => x.n));
+    const ro = (n, a, k) => '<div class="kt"><h4>' + n + '</h4>' + a.slice(0, k || 6).map(x => '<div style="font-size:13px;margin:4px 0">' + esc(x.nom) + '<span class="bar" style="width:' + Math.round(x.n / mx(a) * 120) + 'px"></span>' + x.n + '</div>').join('') + '</div>';
+    E.innerHTML = chipq([['bugun', 'Bugun'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], SV, 'savdo') +
+      '<div class="g2">' + k('📦 Dastafka', s.dastafka) + k('💰 Summa', pul(s.summa)) + k("🧾 O'rtacha chek", pul(s.ortachaChek)) + k('↩️ Qaytdi', s.qaytdi) + '</div>' +
+      ro("🏆 Eng ko'p sotilgan", s.mahsulot) + ro("📏 O'lcham", s.olcham) + ro('🎨 Rang', s.rang) + ro('🧑‍💼 Sotuvchilar', s.sotuvchi, 10) + ro('📍 Viloyat', s.viloyat) + ro('📲 Ilova', s.ilova);
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+let QD = 'bugun';
+async function qongiroq(d) {
+  QD = d || QD; sarl("Qo'ng'iroqlar", 'MetaSell'); yuk();
+  try {
+    const q = await api('qongiroq', { davr: QD });
+    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy']], QD, 'qongiroq') +
+      '<div class="g2">' + k('📞 Jami', q.jami, 'kiruvchi ' + q.kiruvchi + ' · chiquvchi ' + q.chiquvchi) + k('❌ Javobsiz kiruvchi', '<span class="dn">' + q.javobsiz + '</span>', 'qayta qilinmagan ' + q.qaytaQilinmagan) +
+      k('⭐ Sifat', q.ortachaBaho == null ? '—' : q.ortachaBaho, '/100') + k('⏱ O\'rtacha', Math.floor(q.ortachaDavom / 60) + ':' + ('0' + q.ortachaDavom % 60).slice(-2)) + '</div>' +
+      (q.etirozlar.length ? '<div class="kt"><h4>🗣 E\'tirozlar</h4>' + q.etirozlar.map(e => esc(e.nom) + ' ' + e.n).join(' · ') + '</div>' : '') +
+      '<div class="kt">' + q.royxat.map(c => '<div class="it" onclick="bet(karta,' + esc(JSON.stringify(c.tel)) + ')"><div class="av" style="background:' + (c.holat === 'unanswered' ? 'var(--r)' : 'var(--y)') + '">' + (c.yonalish === 'kiruvchi' ? '⬇' : '⬆') + '</div><div class="m"><b>' + esc(c.tel) + (c.mijoz ? ' · ' + esc(c.mijoz) : '') + '</b><span>' + sana(c.ms) + ' ' + vaqt(c.ms) + ' · ' + (c.holat === 'unanswered' ? 'javobsiz' : c.davom) + (c.mazmun ? ' · ' + esc(c.mazmun) : '') + '</span></div><div class="r">' + (c.baho !== '' ? '⭐ ' + c.baho : '') + '</div></div>').join('') + '</div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+function kartaSor() { sarl('Mijoz kartasi', ''); E.innerHTML = '<input id="kq" placeholder="Telefon yoki nik">'; $('#kq').onchange = e => bet(karta, e.target.value); }
+async function karta(q) {
+  sarl('Mijoz kartasi', q); yuk();
+  try {
+    const c = await api('karta', { q });
+    E.innerHTML = '<div class="kt"><h4>👤 ' + esc(c.ism || '—') + '</h4>' + esc(c.tel || '') + (c.chat ? ' · ' + (c.chat.kanal === 'Instagram' ? '📸 ' : '✈️ ') + esc(c.chat.mijoz) : '') + '</div>' +
+      '<div class="g2">' + k('📦 Dastafka', c.dastafka, pul(c.summa) + " so'm") + k('↩️ Qaytgan', c.qaytdi) + '</div>' +
+      (c.olchamlar.length ? '<div class="kt"><h4>📏 O\'lchamlari</h4>' + esc(c.olchamlar.join(', ')) + '</div>' : '') +
+      '<div class="kt"><h4>🕘 Tarix</h4>' + (c.tarix.map(t => '<div style="font-size:12.5px;margin:5px 0">' + t.sana + ' ' + ({ dastafka: '📦', qongiroq: '📞', Instagram: '📸', Telegram: '✈️' }[t.tur] || '•') + ' ' + esc(t.matn) + '</div>').join('') || '—') + '</div>' +
+      (c.chat ? '<button class="btn" onclick="bet(yozishma,' + esc(JSON.stringify(c.chat.kanal)) + ',' + esc(JSON.stringify(c.chat.conv)) + ',' + esc(JSON.stringify(c.chat.mijoz)) + ')">📜 Yozishma</button>' : '');
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+async function javobTez() {
+  sarl('Javob tezligi', 'shu oy'); yuk();
+  try {
+    const r = await api('javobTezligi', { davr: 'oy' });
+    E.innerHTML = '<div class="kt"><h4>⏳ Hozir kutyapti: ' + r.hozir.length + '</h4>' + (r.hozir.map(chatQator).join('') || '✅') + '</div><div class="kt"><h4>📊 Kim qanday</h4>' +
+      r.kim.map(x => '<div class="it"><div class="m"><b>' + esc(x.kim) + '</b><span>' + x.n + ' ta · o\'rtacha ' + x.ortacha + ' daq</span></div><div class="r">🔴 ' + x.qizil + '</div></div>').join('') + '</div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+async function qayta() {
+  sarl('Qayta yozish', 'olmagan, lekin qiziqqanlar'); yuk();
+  try {
+    const l = await api('qayta');
+    E.innerHTML = '<div class="kt">' + (l.map(x => '<div class="it"><div class="av ' + (x.kanal === 'Telegram' ? 'tg' : 'ig') + '">' + esc((x.mijoz || '?')[0]) + '</div><div class="m"><b>' + esc(x.mijoz) + ' · ' + esc(x.sana) + '</b><span>«' + esc(x.sorov) + '» → ' + esc(x.natija) + (x.kimga ? ' · ' + esc(x.kimga) : '') + '</span></div><button class="btn kichik" onclick="qaytaOk(\'' + esc(x.kalit) + '\')">✅</button></div>').join('') || '✅ Ro\'yxat bo\'sh') + '</div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+async function qaytaOk(kalit) { try { await api('qaytaOk', { kalit }); toast('✅'); qayta(); } catch (e) { toast('❌ ' + e.message); } }
+async function eslatma() {
+  sarl('Eslatmalar', ''); yuk();
+  try {
+    const l = await api('eslatmalar');
+    E.innerHTML = '<div class="kt">' + (l.map(e => '<div class="it"><div class="m"><b>⏰ ' + esc(e.vaqt) + '</b><span style="white-space:normal">' + esc(e.matn) + '</span></div><button class="btn kichik btn2" onclick="esOchir(\'' + e.id + '\')">🗑</button></div>').join('') || "Eslatma yo'q") + '</div>' +
+      '<div class="kt"><label>Qachon</label><input type="datetime-local" id="ev"><label>Nima</label><input id="em"><button class="btn" onclick="esQosh()">➕ Qo\'shish</button></div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+async function esQosh() { try { await api('eslatmaQosh', { vaqt: $('#ev').value, matn: $('#em').value }); toast('✅'); eslatma(); } catch (e) { toast('❌ ' + e.message); } }
+async function esOchir(id) { try { await api('eslatmaOchir', { id }); eslatma(); } catch (e) { toast('❌ ' + e.message); } }
+async function tayyor() {
+  sarl('Tayyor javoblar', 'bosing — nusxa olinadi'); yuk();
+  try { const l = await api('tayyor'); E.innerHTML = l.map(t => '<div class="kt" onclick="nusxa(this.dataset.m)" data-m="' + esc(t.matn) + '"><h4>' + esc(t.nomi) + '</h4><div style="color:#ccc;white-space:pre-wrap">' + esc(t.matn) + '</div></div>').join('') || '<div class="kt">Jadvaldagi «Tayyor javoblar» varag\'iga qo\'shing</div>'; }
+  catch (e) { E.innerHTML = ''; xato(e); }
+}
+function nusxa(t) { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); toast('📋 Nusxa olindi'); } catch (e) { toast('Ushlab turib nusxa oling'); } a.remove(); }
+function yuklab() {
+  sarl('Yuklab olish', 'Excel fayl botga keladi');
+  E.innerHTML = '<div class="kt"><label>Hisobot</label><select id="yt"><option value="dastafka">📦 Dastafka</option><option value="savdo">📊 Savdo</option><option value="javob">⏳ Javob tezligi</option><option value="qongiroq">📞 Qo\'ng\'iroq</option></select>' +
+    '<label>Davr</label><select id="yd"><option value="bugun">Bugun</option><option value="7kun">7 kun</option><option value="oy" selected>Shu oy</option><option value="otgan_oy">O\'tgan oy</option></select><button class="btn" onclick="ykYubor()">⬇️ Botga yuborish</button></div>';
+}
+async function ykYubor() { toast('⏳ Tayyorlanmoqda…'); try { const r = await api('yuklab', { tur: $('#yt').value, davr: $('#yd').value }); toast('✅ Botga yuborildi (' + r.qatorlar + ' qator)'); } catch (e) { toast('❌ ' + e.message); } }
+async function jamoa() {
+  sarl('Jamoa', ''); yuk();
+  try {
+    const l = await api('jamoa');
+    E.innerHTML = '<div class="kt">' + l.map(x => '<div class="it"><div class="m"><b>' + ({ Ega: '👑 ', Admin: '🛠 ', Sotuvchi: '🛍 ' }[x.rol] || '') + esc(x.ism) + '</b><span>' + x.rol + (x.sotuvchi ? ' · ' + esc(x.sotuvchi) : '') + '</span></div>' + (MEN.rol === 'Ega' ? '<button class="btn kichik btn2" onclick="jOchir(\'' + x.id + '\',' + esc(JSON.stringify(x.ism)) + ')">➖</button>' : '') + '</div>').join('') + '</div>' +
+      (MEN.rol === 'Ega' ? '<div class="row"><button class="btn" onclick="jKod(\'Sotuvchi\')">➕ Sotuvchi kodi</button><button class="btn btn2" onclick="jKod(\'Admin\')">➕ Admin kodi</button></div>' : '') + '<div id="kod"></div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+async function jKod(rol) { try { const r = await api('kod', { rol }); $('#kod').innerHTML = '<div class="kt">🔑 ' + rol + ' kodi: <b style="font-size:22px">' + r.kod + '</b><br><small>Odam botga shu 6 raqamni yozadi. 24 soat, 1 marta.</small></div>'; } catch (e) { toast('❌ ' + e.message); } }
+async function jOchir(id, ism) { if (!await tasdiq(ism + " o'chirilsinmi?")) return; try { await api('ochir', { id }); jamoa(); } catch (e) { toast('❌ ' + e.message); } }
+async function tizim() {
+  sarl('Tizim', ''); yuk();
+  try {
+    const t = await api('tizim'), d = x => x == null ? "hali yo'q" : x + ' daq oldin';
+    E.innerHTML = '<div class="g2">' + k('📸 IG webhook', d(t.webhookIG)) + k('✈️ Telegram', d(t.tgOxirgi)) + k('📞 MetaSell', d(t.metasell)) + k('🕐 Ish vaqti', t.ishVaqti + ' / 360') + '</div>' +
+      '<div class="kt"><h4>Triggerlar</h4>' + ['yangilash', 'tez', 'soatlik', 'tahlil'].map(x => (t.triggerlar.indexOf(x) >= 0 ? '✅ ' : '❌ ') + x).join(' · ') + '</div>' +
+      '<div class="kt"><h4>✏️ Tahrirlar</h4>' + t.tahrir.map(x => '<div style="font-size:12px;margin:4px 0">' + esc(x[0]) + ' · <b>' + esc(x[1]) + '</b> · ' + esc(x[2]) + ' · ' + esc(x[3]) + ': ' + esc(x[4]) + ' → ' + esc(x[5]) + '</div>').join('') + '</div>' +
+      '<div class="kt"><h4>🧾 Jurnal</h4>' + t.jurnal.map(x => '<div style="font-size:12px;margin:4px 0">' + (x[1] === 'XATO' ? '❌ ' : '✅ ') + esc(x[0]) + ' ' + esc(x[2]) + '</div>').join('') + '</div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+function elon() {
+  sarl("E'lon", 'jamoaning hammasiga');
+  E.innerHTML = '<div class="kt"><textarea id="et" placeholder="Matn…"></textarea><button class="btn" onclick="elYubor()">📢 Yuborish</button></div>';
+}
+async function elYubor() { const t = $('#et').value.trim(); if (!t || !await tasdiq("📢 Hammaga:\n\n" + t)) return; try { const r = await api('elon', { matn: t }); toast('✅ ' + r.n + ' kishiga'); } catch (e) { toast('❌ ' + e.message); } }
+function qollanma() { sarl("Qo'llanma", "bo'limni bosing"); E.innerHTML = MEN.qollanma.map(b => '<details><summary>' + esc(b.nom) + '</summary><p>' + esc(b.matn) + '</p></details>').join(''); }
+
+// ---------------- Boshlash ----------------
+// Telegram initData'ni #tgWebAppData=… dan ajratib oladi. Google manzilni dekod qilib bergan bo'lsa ham ishlaydi:
+// tgWebAppData'dan keyin Telegram'ning o'z parametrlari (&tgWebAppVersion=… va h.k.) gacha bo'lgan hamma qism olinadi.
+function tgInit_(h) {
+  h = String(h || '').replace(/^#/, '');
+  const i = h.indexOf('tgWebAppData=');
+  if (i < 0) return '';
+  let s = h.slice(i + 13);
+  const j = s.search(/&tgWebApp[A-Za-z]*=/);
+  if (j >= 0) s = s.slice(0, j);
+  if (s.indexOf('&') < 0 && /%26|%3D/i.test(s)) { try { s = decodeURIComponent(s); } catch (e) {} }   // kodlangan holatda — bir marta ochiladi
+  return s;
+}
+function boshla() {
+  const ol = loc => {
+    const h = (loc && loc.hash) || '', p = (loc && loc.parameter) || {};
+    const W = window.Telegram && Telegram.WebApp;
+    if (W) { try { W.ready(); W.expand(); W.setHeaderColor && W.setHeaderColor('#0d0d0d'); W.setBackgroundColor && W.setBackgroundColor('#0d0d0d'); } catch (e) {} }
+    INIT = (W && W.initData) || tgInit_(h) || tgInit_(location.hash) || p.tgWebAppData || '';
+    if (!GAS && !API_URL) { E.innerHTML = '<div class="xato">Ilovani botdagi «📱 Ilova» tugmasidan oching.</div>'; $('#ost').textContent = ''; return; }
+    if (!INIT) { E.innerHTML = '<div class="xato">Ilovani Telegram\'dagi «ALLMAX Community» botidan oching (📱 Ilova tugmasi).</div>'; $('#ost').textContent = ''; return; }
+    if (!/(^|&)hash=/.test(INIT)) {   // tashxis: qaysi maydonlar keldi (qiymatlarsiz)
+      E.innerHTML = '<div class="xato">Telegram imzosi kelmadi. Kelgan maydonlar: ' + esc(INIT.split('&').map(x => x.split('=')[0]).join(', ')) + '</div>'; $('#ost').textContent = ''; return;
+    }
+    api('men').then(m => { MEN = m; tabla('asosiy'); }).catch(e => { E.innerHTML = ''; xato(e); $('#ost').textContent = ''; });
+  };
+  if (window.google && google.script && google.script.url) google.script.url.getLocation(ol); else ol({ hash: location.hash });
+}
+boshla();
+</script>
+</body></html>
