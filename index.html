@@ -72,6 +72,21 @@ body.f-oq{background-color:#f3f4f1;color:#151515;background-image:repeating-radi
 .f-oq .yuk{color:#777}
 .f-oq .tab{background:rgba(250,250,248,.97);border-top-color:#e3e5df}.f-oq .tab button{color:#777}.f-oq .tab .on{color:#2e8b3e}
 .f-oq .modal>div{background:#fff;color:#151515}
+
+.qh{background:#151515;color:#fff;border-radius:20px;padding:20px 18px 12px;margin:8px 0;position:relative;overflow:hidden}
+.qh:after{content:'«';position:absolute;right:-6px;top:-28px;font-size:150px;font-weight:900;color:rgba(79,191,94,.12)}
+.qhl{width:44px;height:44px;border-radius:12px;background:var(--y);display:flex;align-items:center;justify-content:center;font-size:22px}
+.qh h2{font-size:19px;margin:12px 0 6px}.qh p{color:#cfcfcf;font-size:13px;line-height:1.55;margin:0 0 4px}
+.qtoc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.qtoc a{background:#fff;border:1px solid #e3e5df;color:#151515;border-radius:18px;padding:6px 11px;font-size:12.5px;cursor:pointer}
+.qs{background:#fff;color:#151515;border:1px solid #e6e8e3;border-radius:18px;padding:16px;margin:10px 0;scroll-margin-top:70px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qs h3{margin:0;font-size:17px}.qs .qq{color:#5b5b5b;margin:4px 0 10px;font-size:13px}
+.qs ol{margin:0;padding-left:20px}.qs li{margin:7px 0;line-height:1.5;font-size:13.5px}
+.qm{border-radius:12px;padding:9px 11px 9px 34px;margin:8px 0;font-size:13px;line-height:1.5;position:relative}
+.qmi{background:#eef8ef;color:#1f5a28}.qmi:before{content:'💡';position:absolute;left:10px;top:8px}
+.qmo{background:#fff4dc;color:#6b4a00}.qmo:before{content:'⚠️';position:absolute;left:10px;top:8px}
+.qai{background:none;border:1px dashed #9cd3a3;color:#2e8b3e;border-radius:12px;padding:8px 10px;width:100%;margin-top:10px;font-weight:600;font-size:13px}
+.qend{text-align:center;color:#555;font-size:13px;margin:16px 0 8px}.qend a{color:#2e8b3e;font-weight:700;cursor:pointer}
 </style></head>
 <body class="f-yashil">
 <div class="top"><div class="lg">«</div><div><b id="sarl">Community</b><small id="ost">yuklanmoqda…</small></div><button class="orq" id="orq" style="display:none" onclick="orqaga()">←</button></div>
@@ -439,9 +454,16 @@ async function jamoa() {
   sarl('Jamoa', ''); yuk();
   try {
     const l = await api('jamoa');
-    E.innerHTML = '<div class="kt">' + l.map(x => '<div class="it"><div class="m"><b>' + ({ Ega: '👑 ', Admin: '🛠 ', Sotuvchi: '🛍 ' }[x.rol] || '') + esc(x.ism) + '</b><span>' + x.rol + (x.sotuvchi ? ' · ' + esc(x.sotuvchi) : '') + '</span></div>' + (MEN.rol === 'Ega' ? '<button class="btn kichik btn2" onclick="jOchir(\'' + x.id + '\',' + esc(JSON.stringify(x.ism)) + ')">➖</button>' : '') + '</div>').join('') + '</div>' +
-      (MEN.rol === 'Ega' ? '<div class="row"><button class="btn" onclick="jKod(\'Sotuvchi\')">➕ Sotuvchi kodi</button><button class="btn btn2" onclick="jKod(\'Admin\')">➕ Admin kodi</button></div>' : '') + '<div id="kod"></div>';
+    E.innerHTML = '<div class="kt">' + l.map(x => '<div class="it"><div class="m"><b>' + ({ Ega: '👑 ', Admin: '🛠 ', Sotuvchi: '🛍 ' }[x.rol] || '') + esc(x.ism) + '</b><span>' + x.rol + (x.sotuvchi ? ' · ' + esc(x.sotuvchi) : '') + '</span></div>' + (MEN.rol === 'Ega' ? '<button class="btn kichik btn2" onclick="jRol(\'' + x.id + '\',' + esc(JSON.stringify(x.ism)) + ',\'' + x.rol + '\')">🔁</button><button class="btn kichik btn2" onclick="jOchir(\'' + x.id + '\',' + esc(JSON.stringify(x.ism)) + ')">➖</button>' : '') + '</div>').join('') + '</div>' +
+      (MEN.rol === 'Ega' ? '<div class="row"><button class="btn" onclick="jKod(\'Sotuvchi\')">➕ Sotuvchi kodi</button><button class="btn btn2" onclick="jKod(\'Admin\')">➕ Admin kodi</button><button class="btn btn2" onclick="jKod(\'Ega\')">➕ Ega kodi</button></div>' : '') + '<div id="kod"></div>';
   } catch (e) { E.innerHTML = ''; xato(e); }
+}
+async function jRol(id, ism, eski) {
+  const yangi = await soraMatn('🔁 ' + ism + ' (hozir: ' + eski + ')\nYangi rolni tanlang:', ['Sotuvchi', 'Admin', 'Ega'].filter(r => r !== eski));
+  if (!yangi) return;
+  if (['Sotuvchi', 'Admin', 'Ega'].indexOf(yangi) < 0) return toast("Ro'yxatdan tanlang");
+  if (!await tasdiq(ism + ': ' + eski + ' → ' + yangi + '\n\nTasdiqlaysizmi?')) return;
+  try { await api('rol', { id, rol: yangi }); toast('✅ ' + ism + ' endi ' + yangi); jamoa(); } catch (e) { toast('❌ ' + e.message); }
 }
 async function jKod(rol) { try { const r = await api('kod', { rol }); $('#kod').innerHTML = '<div class="kt">🔑 ' + rol + ' kodi: <b style="font-size:22px">' + r.kod + '</b><br><small>Odam botga shu 6 raqamni yozadi. 24 soat, 1 marta.</small></div>'; } catch (e) { toast('❌ ' + e.message); } }
 async function jOchir(id, ism) { if (!await tasdiq(ism + " o'chirilsinmi?")) return; try { await api('ochir', { id }); jamoa(); } catch (e) { toast('❌ ' + e.message); } }
@@ -460,7 +482,26 @@ function elon() {
   E.innerHTML = '<div class="kt"><textarea id="et" placeholder="Matn…"></textarea><button class="btn" onclick="elYubor()">📢 Yuborish</button></div>';
 }
 async function elYubor() { const t = $('#et').value.trim(); if (!t || !await tasdiq("📢 Hammaga:\n\n" + t)) return; try { const r = await api('elon', { matn: t }); toast('✅ ' + r.n + ' kishiga'); } catch (e) { toast('❌ ' + e.message); } }
-function qollanma() { fon('oq'); sarl("Qo'llanma", "bo'limni bosing"); E.innerHTML = MEN.qollanma.map(b => '<details><summary>' + esc(b.nom) + '</summary><p>' + esc(b.matn) + '</p></details>').join(''); }
+function qollanma(q) {
+  fon('oq'); sarl("Qo'llanma", 'bot va ilova · AI har doim yordam beradi');
+  const L = MEN.qollanma || [], f = String(q || '').toLowerCase().trim();
+  const qad = t => String(t || '').split('\n').filter(Boolean).map(x => /^💡/.test(x) ? '<div class="qm qmi">' + esc(x.replace(/^💡\s*/, '')) + '</div>' : /^⚠️/.test(x) ? '<div class="qm qmo">' + esc(x.replace(/^⚠️\s*/, '')) + '</div>' : '<li>' + esc(x) + '</li>').join('')
+    .replace(/(<li>.*?<\/li>)+/g, m => '<ol>' + m + '</ol>');
+  const mos = L.map((b, i) => ({ b, i })).filter(x => !f || (x.b.nom + ' ' + x.b.qisqa + ' ' + x.b.matn).toLowerCase().indexOf(f) >= 0);
+  E.innerHTML = '<div class="qh"><div class="qhl">📖</div><h2>ALLMAX Community qo\'llanmasi</h2><p>' + esc(MEN.qollanmaKirish || '') + '</p>' +
+    '<button class="btn" onclick="qSor(\'\')">🤖 AI\'dan so\'rash</button></div>' +
+    '<input id="qq2" placeholder="🔎 Qo\'llanmadan qidirish: o\'chirish, rol, 🟡…" value="' + esc(q || '') + '">' +
+    (f ? '' : '<div class="qtoc">' + L.map((b, i) => '<a onclick="document.getElementById(\'qb' + i + '\').scrollIntoView({behavior:\'smooth\',block:\'start\'})">' + esc(b.nom) + '</a>').join('') + '</div>') +
+    (mos.map(({ b, i }) => '<section class="qs" id="qb' + i + '"><h3>' + esc(b.nom) + '</h3><p class="qq">' + esc(b.qisqa || '') + '</p>' + qad(b.matn) +
+      '<button class="qai" onclick="qSor(' + esc(JSON.stringify(b.nom.replace(/^\S+\s/, ''))) + ')">🤖 Shu bo\'lim bo\'yicha AI\'dan so\'rash</button></section>').join('') ||
+      '<div class="kt">Topilmadi. 🤖 AI\'dan so\'rab ko\'ring.</div>') +
+    '<div class="qend">Savolingiz qoldimi? <a onclick="qSor(\'\')">🤖 AI\'ga yozing</a> — u shu qo\'llanmani biladi.</div>';
+  $('#qq2').onchange = e => qollanma(e.target.value);
+}
+function qSor(mavzu) {
+  tabla('ai');
+  setTimeout(() => { const i = $('#aiq'); if (!i) return; i.value = mavzu ? mavzu + " — qanday ishlaydi? Oddiy tushuntirib ber" : ''; i.focus(); }, 50);
+}
 
 // ---------------- Boshlash ----------------
 // Telegram initData'ni #tgWebAppData=… dan ajratib oladi. Google manzilni dekod qilib bergan bo'lsa ham ishlaydi:
