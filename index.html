@@ -107,8 +107,22 @@ function toast(t) { const d = document.createElement('div'); d.className = 'toas
 const GAS = !!(window.google && google.script && google.script.run);
 const API_URL = (() => { const q = new URLSearchParams(location.search); let u = q.get('api') || q.get('s') || ''; try { if (u) localStorage.setItem('cm_api', u); else u = localStorage.getItem('cm_api') || ''; } catch (e) {} return u; })();
 const OQISH = ['asosiy', 'chatlar', 'yozishma', 'dastafkalar', 'kommentlar', 'shablon', 'savdo', 'qongiroq', 'karta', 'tahlil', 'javobTezligi', 'qayta', 'eslatmalar', 'tayyor', 'jamoa', 'tizim', 'qidir', 'reklama'];
+// Ilova keshi: oxirgi javob telefonda saqlanadi — ekran darhol chiziladi, yangisi fonda keladi va farq bo'lsa ekran jim yangilanadi
+const KK = {}; let KESHDAN = false;
+function kOl(k) { if (KK[k]) return KK[k]; try { const v = localStorage.getItem('ck_' + k); if (v) return (KK[k] = JSON.parse(v)); } catch (e) {} return null; }
+function kQoy(k, r) { KK[k] = r; try { localStorage.setItem('ck_' + k, JSON.stringify(r)); } catch (e) {} }
+function kTozala() { Object.keys(KK).forEach(k => delete KK[k]); try { Object.keys(localStorage).filter(k => /^ck_/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {} }
 function api(m, a) {
-  const e = EKRAN, p = apiXom(m, a);
+  const e = EKRAN, k = m + '|' + JSON.stringify(a || {});
+  if (OQISH.indexOf(m) >= 0) {
+    const c = kOl(k);
+    if (KESHDAN && c) return Promise.resolve(c);
+    if (c && !JIM) {                                             // eski nusxa darhol, yangisi fonda
+      apiXom(m, a).then(r => { const o = JSON.stringify(c) !== JSON.stringify(r); kQoy(k, r); if (o && e === EKRAN) qaytaChiz(); }).catch(() => {});
+      return Promise.resolve(c);
+    }
+  }
+  const p = apiXom(m, a).then(r => { if (OQISH.indexOf(m) >= 0) kQoy(k, r); else if (!/^(men|kmVariant|ai|aiYangi|telTop|ocr)$/.test(m)) kTozala(); return r; });
   if (OQISH.indexOf(m) < 0) return p;                          // yozish so'rovlari — har doim oxirigacha
   const kut = () => new Promise(() => {});                     // ekran almashgan — jim tashlanadi
   return p.then(r => e === EKRAN ? r : kut(), x => { if (e === EKRAN) throw x; return kut(); });
@@ -126,6 +140,12 @@ function xato(e) { E.insertAdjacentHTML('afterbegin', '<div class="xato">❌ ' +
 let JIM = false;                                               // jim yangilanish: «yuklanmoqda» ko'rsatilmaydi
 function yuk() { if (!JIM) E.innerHTML = '<div class="yuk">⏳ yuklanmoqda…</div>'; }
 // Ochiq ekran (Asosiy, Xabarlar, yozishma) har 15 soniyada o'zi yangilanadi. Ilova yopiq/fon'da, oyna ochiq yoki yozayotganda — yangilanmaydi
+function qaytaChiz() {
+  const t = tarix[tarix.length - 1]; if (!t || document.querySelector('.modal')) return;
+  const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
+  const y = window.scrollY; JIM = true; KESHDAN = true;
+  Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { KESHDAN = false; JIM = false; window.scrollTo(0, y); });
+}
 const YANGILASH_SON = 15;
 setInterval(() => {
   if (document.hidden || JIM || document.querySelector('.modal')) return;
@@ -294,9 +314,11 @@ async function dsYoz() {
   DS.m = m;
   const tv = DS.tv.map(x => ({ barkod: String(x.barkod).replace(/\D/g, ''), narx: Number(String(x.narx).replace(/\D/g, '')), model: x.model, mahsulot: x.mahsulot, olcham: x.olcham, rang: x.rang, soni: Number(x.soni) || 1 }));
   if (!tv.length) return toast('Kamida 1 tovar');
-  const jami = tv.reduce((a, x) => a + (x.narx % 1000 === 900 ? x.narx + 100 : x.narx) * x.soni, 0);
+  const yax = n => { const t = Math.ceil(n / 10000) * 10000, f = t - n; return n > 0 && f > 0 && f <= 1000 ? t : n; };   // serverdagi narxTuz_ bilan bir xil
+  tv.forEach(x => x.narx = yax(x.narx));
+  const jami = tv.reduce((a, x) => a + x.narx * x.soni, 0);
   if (!await tasdiq('📦 Dastafka\n' + tv.map((x, i) => (i + 1) + ') ' + x.mahsulot + ' · ' + x.model + ' · ' + x.olcham + ' · ' + x.rang + ' · ' + x.soni + ' ta · ' + pul(x.narx)).join('\n') +
-    '\n\n👤 ' + m.ism + ' · ' + m.telefon + '\n📍 ' + m.viloyat + ', ' + m.manzil + '\n📲 ' + m.ilova + '\n💰 Jami: ' + pul(jami) + '\n\n(900 bilan tugagan narxga +100 qo\'shiladi)')) return;
+    '\n\n👤 ' + m.ism + ' · ' + m.telefon + '\n📍 ' + m.viloyat + ', ' + m.manzil + '\n📲 ' + m.ilova + '\n💰 Jami: ' + pul(jami) + '\n\n(narxlar to\'liq songa yaxlitlangan)')) return;
   if (DS.yozilmoqda) return;                                   // tugma 2-marta bosilsa — e'tiborsiz
   DS.yozilmoqda = true;
   try {
@@ -527,7 +549,10 @@ function boshla() {
     if (!/(^|&)hash=/.test(INIT)) {   // tashxis: qaysi maydonlar keldi (qiymatlarsiz)
       E.innerHTML = '<div class="xato">Telegram imzosi kelmadi. Kelgan maydonlar: ' + esc(INIT.split('&').map(x => x.split('=')[0]).join(', ')) + '</div>'; $('#ost').textContent = ''; return;
     }
-    api('men').then(m => { MEN = m; tabla('asosiy'); }).catch(e => { E.innerHTML = ''; xato(e); $('#ost').textContent = ''; });
+    try { const m0 = JSON.parse(localStorage.getItem('cm_men') || 'null'); if (m0) { MEN = m0; tabla('asosiy'); } } catch (e) {}   // oldingi ochilishdan — darhol
+    if (!MEN) apiXom('asosiy', { davr: DAVR }).then(r => kQoy('asosiy|' + JSON.stringify({ davr: DAVR }), r)).catch(() => {});        // parallel: men bilan birga
+    apiXom('men').then(m => { const bor = !!MEN; MEN = m; try { localStorage.setItem('cm_men', JSON.stringify(m)); } catch (e) {} if (!bor) tabla('asosiy'); })
+      .catch(e => { if (MEN && !/yo'qsiz|tekshiruv|eskirgan|Telegram/i.test(e.message)) return; MEN = null; E.innerHTML = ''; xato(e); $('#ost').textContent = ''; });
   };
   if (window.google && google.script && google.script.url) google.script.url.getLocation(ol); else ol({ hash: location.hash });
 }
