@@ -151,6 +151,7 @@ setInterval(() => {
   if (document.hidden || JIM || document.querySelector('.modal')) return;
   const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
   const t = tarix[tarix.length - 1]; if (!t || [asosiy, xabarlar, yozishma].indexOf(t[0]) < 0) return;
+  if (t[0] === xabarlar && XF === 'komment') return;          // kommentlar har 15 soniyada qayta chizilmaydi (ro'yxat serverda 15 daqiqada yangilanadi)
   const y = window.scrollY, pastda = window.innerHeight + y >= document.body.scrollHeight - 40;
   const e = EKRAN; JIM = true;
   Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { if (e !== EKRAN) return; JIM = false; window.scrollTo(0, t[0] === yozishma && pastda ? document.body.scrollHeight : y); });
@@ -227,7 +228,7 @@ async function yozishma(kanal, conv, mijoz) {
 let KM = [];
 async function kommentlar() {
   fon('oq');
-  E.innerHTML = chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], 'komment', 'xabarlar') + '<div id="kl"><div class="yuk">⏳ Instagram\'da tekshirilmoqda…</div></div>';
+  if (!JIM || !$('#kl')) E.innerHTML = chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], 'komment', 'xabarlar') + '<div id="kl"><div class="yuk">⏳ yuklanmoqda…</div></div>';
   try {
     const r = await api('kommentlar'); KM = r.royxat; window.TJ = r.tayyor;
     const v = {}; KM.forEach(x => (v[x.havola || x.kontent] = v[x.havola || x.kontent] || []).push(x));
