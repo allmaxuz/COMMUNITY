@@ -322,19 +322,39 @@ async function tirox(t, q) {
       const x = await api('tiroxXulosa');
       E.innerHTML = chipq(TC, TXT, 'tirox') + '<div class="kt"><b>📊 Tirox umumiy</b><br><span style="color:#aaa;font-size:12px">Qaysi ro\'yxatda nechta mijoz bor. Bosing — ro\'yxat ochiladi.</span></div>' +
         x.t.map(z => '<div class="kt" onclick="tirox(\'' + z.tur + '\')"><b>' + esc(z.nom) + '</b><br><span style="color:#aaa;font-size:12px">' + esc(z.izoh) + '</span><div class="g2" style="margin-top:8px">' + k('JAMI', z.soni + ' ta') + k('Balans', pul(z.jami)) + k("O'RTACHA", pul(z.ortacha)) + k('Yashirin', z.yashirin) + '</div></div>').join('') +
-        '<div class="kt" style="font-size:12px;color:#aaa">Aloqa qilinganlar ' + 7 + ' kun ro\'yxatdan yashirinadi. Ma\'lumot ' + (x.yosh === null ? 'yig\'ilmagan' : x.yosh + ' daq oldingi') + '.</div>';
+        pushTugma('h') + '<div class="kt" style="font-size:12px;color:#aaa">Aloqa qilinganlar ' + 7 + ' kun ro\'yxatdan yashirinadi. Ma\'lumot ' + (x.yosh === null ? 'yig\'ilmagan' : x.yosh + ' daq oldingi') + '.</div>';
       return;
     }
     const r = await api('tirox', { tur: TXT, q: TXQ, min: TXM, kun: TXK });
     E.innerHTML = chipq(TC, TXT, 'tirox') +
       '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><div class="row"><select id="txm"><option value="0">💰 Balans: hammasi</option>' + [15000, 50000, 100000, 200000].map(v => '<option value="' + v + '"' + (TXM === v ? ' selected' : '') + '>≥ ' + pul(v) + '</option>').join('') + '</select><select id="txk"><option value="0">📅 Kun: standart</option>' + [30, 40, 60, 90].map(v => '<option value="' + v + '"' + (TXK === v ? ' selected' : '') + '>≥ ' + v + ' kun</option>').join('') + '</select></div><div class="kt"><b>' + esc(r.nom) + '</b><br><span style="color:#aaa;font-size:12px">' + esc(r.izoh) + '</span></div>' +
-      '<div class="g2">' + k('JAMI', r.soni + ' ta') + k('Balans', pul(r.jami)) + k("O'RTACHA", pul(r.ortacha)) + k('Yashirin', r.yashirin) + '</div>' +
+      '<div class="g2">' + k('JAMI', r.soni + ' ta') + k('Balans', pul(r.jami)) + k("O'RTACHA", pul(r.ortacha)) + k('Yashirin', r.yashirin) + '</div>' + (TXT === 'o' ? '' : pushTugma(TXT)) +
       '<div class="kt">' + (r.royxat.map((x, i) => '<div class="it"><div class="m"><b>' + (i + 1) + '. ' + esc(x.ism || '—') + '</b><span>' + pul(x.bal) + (x.kun !== null && TXT !== 'o' ? ' · ' + x.kun + ' kun' : '') + (x.aloqa ? ' · 📞 ' + esc(x.aloqa) : '') + '</span></div><a class="r" href="tel:+' + String(x.tel).replace(/\D/g, '') + '">📞</a></div>').join('') || '✅ Ro\'yxat bo\'sh') + '</div>' +
       '<div class="kt" style="font-size:12px;color:#aaa">Aloqa natijasini botda belgilang: 🎁 Tirox. Ma\'lumot ' + (r.yosh === null ? 'yig\'ilmagan' : r.yosh + ' daq oldingi') + '.</div>';
     $('#txq').onchange = e => tirox(null, e.target.value);
     $('#txm').onchange = e => { TXM = Number(e.target.value); tirox(); };
     $('#txk').onchange = e => { TXK = Number(e.target.value); tirox(); };
   } catch (e) { xato(e); }
+}
+function pushTugma(t) { return MEN && MEN.rol === 'Ega' ? '<button class="btn" onclick="bet(tiroxPush,\'' + t + '\')">📣 Push yuborish</button>' : ''; }
+let PUSHT = 'h', PUSHM = '';
+async function tiroxPush(t) {
+  if (t) PUSHT = t; sarl('📣 Tirox push', 'mijozlarga xabar'); yuk();
+  try {
+    const o = await api('tiroxPushOldin', { tur: PUSHT });
+    E.innerHTML = chipq([['h', '💰 Hammasi'], ['b', 'Katta balans'], ['k', 'Kelmaganlar']], PUSHT, 'tiroxPush') +
+      '<div class="kt"><b>' + esc(o.nom) + '</b><br><span style="color:#aaa;font-size:12px">Karta telefonga o\'rnatilganlarga boradi. Karta yo\'q mijozga push yetmaydi.</span>' +
+      '<div class="g2" style="margin-top:8px">' + k('Yuboriladi', o.soni + ' ta') + k('Limit (haftada 2)', o.limit + ' ta', 'o\'tkazib yuboriladi') + '</div></div>' +
+      '<div class="kt"><textarea id="pm" maxlength="300" placeholder="Push matni (300 belgigacha, mijozga ko\'rinadi)">' + esc(PUSHM) + '</textarea>' +
+      (o.kalit ? '<button class="btn" onclick="pushYubor()">📣 Yuborish</button>' : '<div style="color:#e5484d;font-size:13px">🔑 Tirox kaliti kiritilmagan — yuborib bo\'lmaydi</div>') + '</div>';
+  } catch (e) { xato(e); }
+}
+async function pushYubor() {
+  const m = $('#pm').value.trim(); PUSHM = m; if (!m) return toast('Matn yozing');
+  const o = await api('tiroxPushOldin', { tur: PUSHT });
+  if (!o.soni) return toast("Yuboriladigan mijoz yo'q");
+  if (!await tasdiq('📣 ' + o.nom + '\n' + o.soni + ' ta mijozga yuboriladi:\n\n«' + m + '»\n\nQaytarib bo\'lmaydi.')) return;
+  try { const r = await api('tiroxPush', { tur: PUSHT, matn: m }); PUSHM = ''; toast('✅ Navbatga qo\'yildi: ' + r.n + ' ta'); tiroxPush(); } catch (e) { toast('❌ ' + e.message); }
 }
 let OLQ = '';
 async function olcham(q) {
