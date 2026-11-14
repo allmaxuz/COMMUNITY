@@ -108,12 +108,12 @@ const ozg = x => x == null ? '' : (x >= 0 ? '<span class="up">▲ ' + x + '%</sp
 const chipq = (l, on, fn) => '<div class="chips">' + l.map(([k, t]) => '<button class="chip' + (k === on ? ' on' : '') + '" onclick="' + fn + '(\'' + k + '\')">' + t + '</button>').join('') + '</div>';
 
 // ---------------- 🏠 Asosiy ----------------
-let DAVR = 'bugun';
+let DAVR = 'oy';
 async function asosiy(d) {
   DAVR = d || DAVR; sarl('Community', MEN ? MEN.ism + ' · ' + MEN.rol : ''); yuk();
   try {
-    const r = await api('asosiy', { davr: DAVR });
-    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') +
+    const [r, x] = await Promise.all([api('asosiy', { davr: DAVR }), api('xulosa', { davr: DAVR }).catch(() => null)]);
+    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') + xulosaKarta(x) +
       '<div class="g2">' +
       k('📸 Instagram', r.ig, ozg(r.ozgarish.ig)) + k('✈️ Telegram', r.tg, ozg(r.ozgarish.tg)) +
       k('📦 Dastafka', r.dastafka, pul(r.summa) + " so'm " + ozg(r.ozgarish.dastafka)) + k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx ?? '—') + ' $') +
@@ -121,6 +121,13 @@ async function asosiy(d) {
       k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('↩️ Qaytdi', r.qaytdi, r.qaytFoiz == null ? '' : r.qaytFoiz + '%') + '</div>' +
       '<div class="kt"><h4>⏳ Hozir javob kutyapti: ' + r.javobsizHozir + '</h4>' + (r.javobsizlar.map(chatQator).join('') || '<span style="color:#888">✅ hech kim</span>') + '</div>';
   } catch (e) { E.innerHTML = ''; xato(e); }
+}
+function xulosaKarta(x) {
+  if (!x) return '';
+  return '<div class="kt"><h4>🧾 Xulosa · ' + esc(x.nom) + '</h4><div class="g2">' +
+    k('✍️ Yozdi', x.jami, 'IG ' + x.ig + ' · TG ' + x.tg + (x.ozg == null ? '' : ' · ' + (x.ozg >= 0 ? '+' : '') + x.ozg + '%')) + k('📆 Kuniga', x.kuniga, "o'rtacha yozgan · " + x.kun + ' kun') +
+    k('💰 Savdo', pul(x.summa) + " so'm", x.dastafka + ' ta dastafka') + k("🧾 O'rtacha chek", pul(x.ortachaChek) + " so'm", x.dona + ' dona') + '</div>' +
+    (x.matn || []).map(t => '<div style="margin-top:6px;font-size:13px">' + esc(t) + '</div>').join('') + '</div>';
 }
 const k = (a, b, c) => '<div class="k"><small>' + a + '</small><b>' + b + '</b><i>' + (c || '') + '</i></div>';
 
@@ -310,10 +317,10 @@ async function tirox(t, q) {
   if (t) { TXT = t; TXM = 0; TXK = 0; } if (q !== undefined) TXQ = q;
   sarl('Tirox', 'mijozlar bilan aloqa'); yuk();
   try {
-    const TC = [['x', '📊 Xulosa'], ['o', 'Karta yo\'q'], ['b', 'Katta balans'], ['k', 'Kelmaganlar']];
+    const TC = [['x', '📊 Umumiy'], ['o', 'Karta yo\'q'], ['b', 'Katta balans'], ['k', 'Kelmaganlar']];
     if (TXT === 'x') {
       const x = await api('tiroxXulosa');
-      E.innerHTML = chipq(TC, TXT, 'tirox') + '<div class="kt"><b>📊 Xulosa</b><br><span style="color:#aaa;font-size:12px">Qaysi ro\'yxatda nechta mijoz bor. Bosing — ro\'yxat ochiladi.</span></div>' +
+      E.innerHTML = chipq(TC, TXT, 'tirox') + '<div class="kt"><b>📊 Tirox umumiy</b><br><span style="color:#aaa;font-size:12px">Qaysi ro\'yxatda nechta mijoz bor. Bosing — ro\'yxat ochiladi.</span></div>' +
         x.t.map(z => '<div class="kt" onclick="tirox(\'' + z.tur + '\')"><b>' + esc(z.nom) + '</b><br><span style="color:#aaa;font-size:12px">' + esc(z.izoh) + '</span><div class="g2" style="margin-top:8px">' + k('JAMI', z.soni + ' ta') + k('Balans', pul(z.jami)) + k("O'RTACHA", pul(z.ortacha)) + k('Yashirin', z.yashirin) + '</div></div>').join('') +
         '<div class="kt" style="font-size:12px;color:#aaa">Aloqa qilinganlar ' + 7 + ' kun ro\'yxatdan yashirinadi. Ma\'lumot ' + (x.yosh === null ? 'yig\'ilmagan' : x.yosh + ' daq oldingi') + '.</div>';
       return;
