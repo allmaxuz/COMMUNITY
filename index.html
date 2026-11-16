@@ -311,30 +311,68 @@ function koproq() {
   l.push(['📖', "Qo'llanma", "har bo'lim qanday ishlaydi", 'qollanma']);
   E.innerHTML = '<div class="kt">' + l.map(([i, n, s, f]) => '<div class="it" onclick="bet(' + f + ')"><div class="av" style="background:' + (f === 'qollanma' ? 'var(--s)' : 'var(--y)') + ';color:#151515">' + i + '</div><div class="m"><b>' + n + '</b><span>' + s + '</span></div><div class="r">›</div></div>').join('') + '</div>';
 }
-let TXT = 'x', TXQ = '', TXM = 0, TXK = 0;
-function tiroxBosh() { TXT = 'x'; TXQ = ''; TXM = 0; TXK = 0; return tirox(); }
-async function tirox(t, q) {
-  if (t) { TXT = t; TXM = 0; TXK = 0; } if (q !== undefined) TXQ = q;
-  sarl('Tirox', 'mijozlar bilan aloqa'); yuk();
+// ---- TIROX: «Bugun qo'ng'iroq» + 3 ro'yxat + mijoz kartasi (balans tarixi) + natijani shu yerda belgilash ----
+let TXT = 'p', TXQ = '', TXM = 0, TXK = 0, TXS = 1;
+function tiroxBosh(saqla) { if (!saqla) { TXT = 'p'; TXQ = ''; TXM = 0; TXK = 0; TXS = 1; } return tirox(); }          // saqla — mijoz kartasidan orqaga: filtr o'zgarmaydi
+function txOchish(kod) { const z = tarix[tarix.length - 1]; if (z && z[0] === tiroxBosh) z[1] = [true]; bet(txMijoz, kod); }
+function tiroxTur(t) { TXT = t; TXM = 0; TXK = 0; TXS = 1; TXQ = ''; tirox(); }
+const txKesh = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if (v === null) { Object.keys(localStorage).filter(z => z.indexOf('tx|') === 0).forEach(z => localStorage.removeItem(z)); } else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} return null; };
+async function tirox() {
+  sarl('Tirox', "kimga qo'ng'iroq qilish");
+  const kalit = 'tx|' + TXT + '|' + TXQ + '|' + TXM + '|' + TXK + '|' + TXS, eski = txKesh(kalit);
+  if (eski) txChiz(eski, true); else yuk();                         // oldingi natija darhol ko'rinadi, yangisi orqada yuklanadi
   try {
-    const TC = [['x', '📊 Umumiy'], ['o', 'Karta yo\'q'], ['b', 'Katta balans'], ['k', 'Kelmaganlar']];
-    if (TXT === 'x') {
-      const x = await api('tiroxXulosa');
-      E.innerHTML = chipq(TC, TXT, 'tirox') + '<div class="kt"><b>📊 Tirox umumiy</b><br><span style="color:#aaa;font-size:12px">Qaysi ro\'yxatda nechta mijoz bor. Bosing — ro\'yxat ochiladi.</span></div>' +
-        x.t.map(z => '<div class="kt" onclick="tirox(\'' + z.tur + '\')"><b>' + esc(z.nom) + '</b><br><span style="color:#aaa;font-size:12px">' + esc(z.izoh) + '</span><div class="g2" style="margin-top:8px">' + k('JAMI', z.soni + ' ta') + k('Balans', pul(z.jami)) + k("O'RTACHA", pul(z.ortacha)) + k('Yashirin', z.yashirin) + '</div></div>').join('') +
-        pushTugma('h') + '<div class="kt" style="font-size:12px;color:#aaa">Aloqa qilinganlar ' + 7 + ' kun ro\'yxatdan yashirinadi. Ma\'lumot ' + (x.yosh === null ? 'yig\'ilmagan' : x.yosh + ' daq oldingi') + '.</div>';
-      return;
+    const r = await api('tiroxTez', { tur: TXT, q: TXQ, min: TXM, kun: TXK, sah: TXS });
+    txKesh(kalit, r);
+    if ($('#sarl').textContent === 'Tirox') txChiz(r, false);
+  } catch (e) { if (!eski) xato(e); }
+}
+function txChiz(r, eski) {
+  const S = r.sar, C = [['p', '📞 Bugun · ' + S.p.soni], ['k', '🚪 Kelmaganlar · ' + S.k.soni], ['b', '💰 Katta balans · ' + S.b.soni], ['o', "📵 Karta yo'q · " + S.o.soni]];
+  const yoz = x => '<div class="it" onclick="txOchish(\'' + esc(x.kod) + '\')"><div class="m"><b>' + esc(x.ism || '—') + '</b><span>' + esc(x.sabab) +
+    (x.ar ? ' · ✔ ' + esc(x.ar.n) + ' (' + (x.ar.d ? x.ar.d + ' kun oldin' : 'bugun') + ', ' + esc(x.ar.k) + ')' : '') + '</span></div>' +
+    '<div class="r" style="font-size:13px;color:#fff"><b>' + pul(x.bal) + '</b></div><a class="btn" style="width:auto;margin:0;padding:9px 13px;text-decoration:none" href="tel:+' + String(x.tel).replace(/\D/g, '') + '" onclick="event.stopPropagation()">📞</a></div>';
+  const filtr = TXT === 'p' ? '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '">' :
+    '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><div class="row"><select id="txm"><option value="0">💰 Balans: hammasi</option>' + [15000, 50000, 100000, 200000].map(v => '<option value="' + v + '"' + (TXM === v ? ' selected' : '') + '>≥ ' + pul(v) + '</option>').join('') +
+    '</select><select id="txk"><option value="0">📅 Kelmagan: hammasi</option>' + [40, 60, 90, 180].map(v => '<option value="' + v + '"' + (TXK === v ? ' selected' : '') + '>≥ ' + v + ' kun</option>').join('') + '</select></div>';
+  const bosh = TXT === 'p' ? '<div class="kt"><b>📞 Bugun shularga qo\'ng\'iroq qiling</b><br><span style="color:#aaa;font-size:12px">Eng muhimlari tepada: va\'da berganlar → bonusi kuyadiganlar → katta balans → uzoq kelmaganlar. Qo\'ng\'iroqdan keyin mijozni bosib natijani belgilang.</span></div>' :
+    '<div class="g2">' + k('JAMI', r.soni + ' ta') + k('Balans', pul(r.jami)) + k("O'RTACHA", pul(r.ortacha)) + k('Yashirin', r.yashirin, '7 kun ichida aloqa qilingan') + '</div>';
+  E.innerHTML = chipq(C, TXT, 'tiroxTur') + filtr + bosh +
+    '<div class="kt">' + (r.royxat.map(yoz).join('') || '✅ Ro\'yxat bo\'sh') + '</div>' +
+    (r.yana ? '<button class="btn btn2" onclick="TXS++;tirox()">Yana ko\'rsatish (' + (r.soni - r.royxat.length) + ')</button>' : '') +
+    (TXT === 'p' ? '' : pushTugma(TXT)) + '<div class="kt" style="font-size:12px;color:#aaa">Ma\'lumot ' + (r.yosh === null ? 'yig\'ilmagan' : r.yosh + ' daq oldingi') + (eski ? ' · yangilanmoqda…' : '') + '.</div>';
+  $('#txq').onchange = e => { TXQ = e.target.value; TXS = 1; tirox(); };
+  if ($('#txm')) { $('#txm').onchange = e => { TXM = Number(e.target.value); TXS = 1; tirox(); }; $('#txk').onchange = e => { TXK = Number(e.target.value); TXS = 1; tirox(); }; }
+}
+const TXTUR = { '+': ['➕', "bonus tushdi", '#4caf50'], '-': ['➖', 'bonus ishlatdi', '#e5484d'], x: ['⌛', 'bonus kuyib ketdi', '#d99a00'], v: ['🛍', 'xarid', '#8ab4ff'] };
+async function txMijoz(kod) {
+  sarl('Mijoz', 'Tirox kartasi'); yuk();
+  try {
+    const c = await api('tiroxMijoz', { kod }), h = c.tarix.filter(e => e.t !== 'v' && e.b > 0).slice(0, 12).reverse();
+    let grafik = '';
+    if (h.length > 1) {                                                  // balans o'zgarishi — kichik chiziqli grafik
+      const mx = Math.max(...h.map(e => e.b)) || 1, W = 300, H = 60, pt = h.map((e, i) => (i * W / (h.length - 1)).toFixed(1) + ',' + (H - e.b / mx * (H - 6) - 3).toFixed(1)).join(' ');
+      grafik = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:64px;margin:6px 0"><polyline points="' + pt + '" fill="none" stroke="#c6ff3d" stroke-width="2"/></svg>';
     }
-    const r = await api('tirox', { tur: TXT, q: TXQ, min: TXM, kun: TXK });
-    E.innerHTML = chipq(TC, TXT, 'tirox') +
-      '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><div class="row"><select id="txm"><option value="0">💰 Balans: hammasi</option>' + [15000, 50000, 100000, 200000].map(v => '<option value="' + v + '"' + (TXM === v ? ' selected' : '') + '>≥ ' + pul(v) + '</option>').join('') + '</select><select id="txk"><option value="0">📅 Kun: standart</option>' + [30, 40, 60, 90].map(v => '<option value="' + v + '"' + (TXK === v ? ' selected' : '') + '>≥ ' + v + ' kun</option>').join('') + '</select></div><div class="kt"><b>' + esc(r.nom) + '</b><br><span style="color:#aaa;font-size:12px">' + esc(r.izoh) + '</span></div>' +
-      '<div class="g2">' + k('JAMI', r.soni + ' ta') + k('Balans', pul(r.jami)) + k("O'RTACHA", pul(r.ortacha)) + k('Yashirin', r.yashirin) + '</div>' + (TXT === 'o' ? '' : pushTugma(TXT)) +
-      '<div class="kt">' + (r.royxat.map((x, i) => '<div class="it"><div class="m"><b>' + (i + 1) + '. ' + esc(x.ism || '—') + '</b><span>' + pul(x.bal) + (x.kun !== null && TXT !== 'o' ? ' · ' + x.kun + ' kun' : '') + (x.aloqa ? ' · 📞 ' + esc(x.aloqa) : '') + '</span></div><a class="r" href="tel:+' + String(x.tel).replace(/\D/g, '') + '">📞</a></div>').join('') || '✅ Ro\'yxat bo\'sh') + '</div>' +
-      '<div class="kt" style="font-size:12px;color:#aaa">Aloqa natijasini botda belgilang: 🎁 Tirox. Ma\'lumot ' + (r.yosh === null ? 'yig\'ilmagan' : r.yosh + ' daq oldingi') + '.</div>';
-    $('#txq').onchange = e => tirox(null, e.target.value);
-    $('#txm').onchange = e => { TXM = Number(e.target.value); tirox(); };
-    $('#txk').onchange = e => { TXK = Number(e.target.value); tirox(); };
-  } catch (e) { xato(e); }
+    const t = c.tarix.length ? c.tarix.map(e => { const z = TXTUR[e.t] || ['•', e.t, '#aaa']; return '<div class="it"><div class="m"><b style="color:' + z[2] + '">' + z[0] + ' ' + (e.t === 'v' ? pul(e.x) + " so'm " : pul(e.m) + ' ') + z[1] + '</b><span>' + esc(e.s) + ' ' + esc(e.v) + (e.xod && e.xod !== "Ko'rsatilmagan" ? ' · ' + esc(e.xod) : '') + '</span></div>' + (e.t === 'v' ? '' : '<div class="r" style="font-size:13px;color:#fff">balans ' + pul(e.b) + '</div>') + '</div>'; }).join('') : '<span style="color:#aaa">Hali amal yo\'q</span>';
+    const al = c.aloqalar.length ? c.aloqalar.map(a => '<div class="it"><div class="m"><b>' + esc(a.n) + (a.vada ? ' · ' + esc(a.vada) + ' da keladi' : '') + '</b><span>' + esc(a.s) + ' · ' + esc(a.kim) + '</span></div></div>').join('') : '<span style="color:#aaa">Hali aloqa bo\'lmagan</span>';
+    E.innerHTML = '<div class="kt"><b style="font-size:17px">' + esc(c.ism || '—') + '</b><br><span style="color:#aaa">' + esc(c.tel) + '</span>' +
+      '<a class="btn" style="text-decoration:none" href="tel:+' + String(c.tel).replace(/\D/g, '') + '">📞 Qo\'ng\'iroq qilish</a>' +
+      '<div class="g2">' + k('💳 Hozirgi balans', pul(c.bal), c.kuy ? '🔥 ' + pul(c.kuy) + ' kuyadi' : '') + k('🏪 Oxirgi tashrif', c.vis || '—', c.kun !== null ? c.kun + ' kun oldin' : '') +
+      k('🛒 Tashriflar', c.visN, c.roy ? "ro'yxatdan " + c.roy : '') + k('📱 Karta', c.on ? 'o\'rnatilgan' : "o'rnatilmagan", '') + '</div></div>' +
+      '<div class="kt"><b>📊 Balans tarixi</b>' + grafik + t + '</div>' +
+      '<div class="kt"><b>📞 Aloqa tarixi</b><br>' + al + '</div>' +
+      '<div class="kt"><b>Natijani belgilang</b><div class="g2">' + [['k', '✅ Keladi'], ['o', "🤔 O'ylab ko'radi"], ['t', "📵 Ko'tarmadi"], ['x', '🚫 Kelmaydi'], ['r', '❓ Raqam xato'], ['b', '📝 Boshqa']].map(([c2, n]) => '<button class="btn btn2" style="margin:0" onclick="txNat(\'' + esc(kod) + '\',\'' + c2 + '\')">' + n + '</button>').join('') + '</div></div>';
+  } catch (e) { E.innerHTML = ''; xato(e); }
+}
+function txNat(kod, c) {
+  if (c !== 'k' && c !== 'o') return txNatYoz(kod, c, '');
+  const kun = n => { const d = new Date(Date.now() + n * 864e5 + 5 * 36e5); return d.toISOString().slice(0, 10); };
+  const m = modal('<p>Qachon kelishini aytdi?</p>' + [['Bugun', 0], ['Ertaga', 1], ['3 kunda', 3], ['Haftada', 7]].map(([n, d]) => '<button class="btn" data-d="' + kun(d) + '">' + n + '</button>').join('') + '<button class="btn btn2" data-d="">Bilmayman</button>');
+  m.querySelectorAll('button').forEach(b => b.onclick = () => { m.remove(); txNatYoz(kod, c, b.dataset.d); });
+}
+async function txNatYoz(kod, c, vada) {
+  try { await api('tiroxNatija', { kod, natija: c, vada }); txKesh('', null); toast('✅ Saqlandi'); orqaga(); } catch (e) { toast('❌ ' + e.message); }
 }
 function pushTugma(t) { return MEN && MEN.rol === 'Ega' ? '<button class="btn" onclick="bet(tiroxPush,\'' + t + '\')">📣 Push yuborish</button>' : ''; }
 let PUSHT = 'h', PUSHM = '';
@@ -453,14 +491,48 @@ async function javobTez() {
       r.kim.map(x => '<div class="it"><div class="m"><b>' + esc(x.kim) + '</b><span>' + x.n + ' ta · o\'rtacha ' + x.ortacha + ' daq</span></div><div class="r">🔴 ' + x.qizil + '</div></div>').join('') + '</div>';
   } catch (e) { E.innerHTML = ''; xato(e); }
 }
+let QYD = { royxat: [], xod: [], filtr: 'hammasi', sah: 1, limit: 25 };
 async function qayta() {
   sarl('Qayta yozish', 'olmagan, lekin qiziqqanlar'); yuk();
   try {
-    const l = await api('qayta');
-    E.innerHTML = '<div class="kt">' + (l.map(x => '<div class="it"><div class="av ' + (x.kanal === 'Telegram' ? 'tg' : 'ig') + '">' + esc((x.mijoz || '?')[0]) + '</div><div class="m"><b>' + esc(x.mijoz) + ' · ' + esc(x.sana) + '</b><span>«' + esc(x.sorov) + '» → ' + esc(x.natija) + (x.kimga ? ' · ' + esc(x.kimga) : '') + '</span></div><button class="btn kichik" onclick="qaytaOk(\'' + esc(x.kalit) + '\')">✅</button></div>').join('') || '✅ Ro\'yxat bo\'sh') + '</div>';
+    const r = await api('qayta');
+    QYD = { royxat: r.royxat || [], xod: r.xodimlar || [], filtr: 'hammasi', sah: 1, limit: r.limit || 25 };
+    qaytaChiz();
   } catch (e) { E.innerHTML = ''; xato(e); }
 }
-async function qaytaOk(kalit) { try { await api('qaytaOk', { kalit }); toast('✅'); qayta(); } catch (e) { toast('❌ ' + e.message); } }
+function qaytaFiltr(k) { QYD.filtr = k; QYD.sah = 1; qaytaChiz(); }
+function qaytaYana() { QYD.sah++; qaytaChiz(); }
+function qaytaChiz() {
+  const ega = MEN.rol !== 'Sotuvchi', nom = QYD.xod.filter(t => t.nom !== 'Biriktirilmagan').map(t => t.nom), f = QYD.filtr;
+  const yoqSon = QYD.royxat.filter(x => nom.indexOf(x.kimga) < 0).length;
+  let l = QYD.royxat.filter(x => f === 'hammasi' ? true : f === '_yoq' ? nom.indexOf(x.kimga) < 0 : x.kimga === nom[+f.slice(1)]);
+  const ochiqSon = QYD.royxat.filter(x => x.ochiq).length;
+  const chips = ega ? chipq([['hammasi', 'Hammasi · ' + ochiqSon + ' ochiq']].concat(nom.map((n, i) => { const t = QYD.xod.find(z => z.nom === n) || {}; return ['x' + i, esc(n) + ' · ' + (t.ochiq || 0) + '/' + ((t.ochiq || 0) + (t.navbat || 0))]; }))
+    .concat(yoqSon ? [['_yoq', 'Biriktirilmagan · ' + yoqSon]] : []), f, 'qaytaFiltr') : '';
+  const xul = QYD.xod.filter(t => f === 'hammasi' || t.nom === nom[+String(f).slice(1)] || (f === '_yoq' && t.nom === 'Biriktirilmagan')).map(t =>
+    '<div class="it"><div class="m"><b>👤 ' + esc(t.nom) + '</b><span>ochiq ' + t.ochiq + ' · navbatda ' + t.navbat + ' · bugun yozdi ' + t.bugun + (t.bugun ? ' (💰' + t.savdo + ' 🤔' + t.oylayapti + ' ❌' + t.rad + ')' : '') + '</span></div></div>').join('');
+  const kor = l.slice(0, 20 * QYD.sah);
+  const it = x => '<div class="it"' + (x.ochiq ? '' : ' style="opacity:.55"') + '><div class="av ' + (x.kanal === 'Telegram' ? 'tg' : 'ig') + '">' + esc((x.mijoz || '?')[0]) + '</div><div class="m"><b>' + esc(x.mijoz) + ' · ' + esc(x.sana) + '</b><span>«' + esc(x.sorov) + '» → ' + esc(x.natija) + (x.kimga ? ' · ' + esc(x.kimga) : ' · biriktirilmagan') + (x.ochiq ? '' : ' · navbatda') + '</span>' +
+    (x.ochiq ? '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">' + (x.havola ? '<a class="btn kichik btn2" href="' + esc(x.havola) + '" target="_blank">💬 Yozish</a>' : '') +
+      ['s|💰', 'o|🤔', 'r|❌', 'j|⏭'].map(z => '<button class="btn kichik btn2" onclick="qaytaOk(\'' + esc(x.kalit) + '\',\'' + z.split('|')[0] + '\')">' + z.split('|')[1] + '</button>').join('') +
+      '<button class="btn kichik" onclick="qaytaOk(\'' + esc(x.kalit) + '\',\'\')">✅</button></div>' : '') + '</div></div>';
+  E.innerHTML = chips + (xul ? '<div class="kt">' + xul + '</div>' : '') + '<div class="kt"><h4>🔁 Mijozlar (' + l.length + ')</h4>' + (kor.map(it).join('') || '✅ Ro\'yxat bo\'sh') + '</div>' +
+    (l.length > kor.length ? '<button class="btn btn2" onclick="qaytaYana()">Yana ko\'rsatish (' + (l.length - kor.length) + ')</button>' : '') +
+    '<div class="kt"><small>Har xodimga bir vaqtda ' + QYD.limit + ' ta ochiladi. 💰 savdo · 🤔 o\'ylayapti · ❌ rad · ⏭ javob yo\'q · ✅ natijasiz. Bajarilsa keyingisi o\'zi ochiladi.</small></div>';
+}
+async function qaytaOk(kalit, natija) {
+  const x = QYD.royxat.find(y => y.kalit === kalit); if (!x) return;
+  try {
+    await api('qaytaOk', { kalit, natija: natija || '' });
+    toast('✅');
+    QYD.royxat = QYD.royxat.filter(y => y !== x);
+    const t = QYD.xod.find(z => z.nom === x.kimga);
+    if (t) { t.ochiq--; t.bugun++; if (natija === 's') t.savdo++; else if (natija === 'o') t.oylayapti++; else if (natija === 'r') t.rad++; else if (natija === 'j') t.javobsiz++; else t.natijasiz++; }
+    const keyin = QYD.royxat.find(y => y.kimga === x.kimga && !y.ochiq);                // shu xodimning navbatdagi eng eski mijozi ochiladi
+    if (keyin && t) { keyin.ochiq = true; t.ochiq++; t.navbat--; }
+    qaytaChiz();
+  } catch (e) { toast('❌ ' + e.message); }
+}
 async function eslatma() {
   sarl('Eslatmalar', ''); yuk();
   try {
@@ -479,7 +551,7 @@ async function tayyor() {
 function nusxa(t) { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); toast('📋 Nusxa olindi'); } catch (e) { toast('Ushlab turib nusxa oling'); } a.remove(); }
 function yuklab() {
   sarl('Yuklab olish', 'Excel fayl botga keladi');
-  E.innerHTML = '<div class="kt"><label>Hisobot</label><select id="yt"><option value="dastafka">📦 Dastafka</option><option value="savdo">📊 Savdo</option><option value="javob">⏳ Javob tezligi</option><option value="qongiroq">📞 Qo\'ng\'iroq</option></select>' +
+  E.innerHTML = '<div class="kt"><label>Hisobot</label><select id="yt"><option value="dastafka">📦 Dastafka</option><option value="savdo">📊 Savdo</option><option value="javob">⏳ Javob tezligi</option><option value="qongiroq">📞 Qo\'ng\'iroq</option><option value="qayta">🔁 Qayta yozish</option></select>' +
     '<label>Davr</label><select id="yd"><option value="bugun">Bugun</option><option value="7kun">7 kun</option><option value="oy" selected>Shu oy</option><option value="otgan_oy">O\'tgan oy</option></select><button class="btn" onclick="ykYubor()">⬇️ Botga yuborish</button></div>';
 }
 async function ykYubor() { toast('⏳ Tayyorlanmoqda…'); try { const r = await api('yuklab', { tur: $('#yt').value, davr: $('#yd').value }); toast('✅ Botga yuborildi (' + r.qatorlar + ' qator)'); } catch (e) { toast('❌ ' + e.message); } }
