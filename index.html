@@ -331,7 +331,7 @@ function txChiz(r, eski) {
   const S = r.sar, C = [['p', '📞 Bugun · ' + S.p.soni], ['k', '🚪 Kelmaganlar · ' + S.k.soni], ['b', '💰 Katta balans · ' + S.b.soni], ['o', "📵 Karta yo'q · " + S.o.soni]];
   const yoz = x => '<div class="it" onclick="txOchish(\'' + esc(x.kod) + '\')"><div class="m"><b>' + esc(x.ism || '—') + '</b><span>' + esc(x.sabab) +
     (x.ar ? ' · ✔ ' + esc(x.ar.n) + ' (' + (x.ar.d ? x.ar.d + ' kun oldin' : 'bugun') + ', ' + esc(x.ar.k) + ')' : '') + '</span></div>' +
-    '<div class="r" style="font-size:13px;color:#fff"><b>' + pul(x.bal) + '</b></div><a class="btn" style="width:auto;margin:0;padding:9px 13px;text-decoration:none" href="tel:+' + String(x.tel).replace(/\D/g, '') + '" onclick="event.stopPropagation()">📞</a></div>';
+    '<div class="r" style="font-size:13px;color:#fff"><b>' + pul(x.bal) + '</b></div>' + (txTel(x.tel) ? '<a class="btn" style="width:auto;margin:0;padding:9px 13px;text-decoration:none" href="tel:+' + txTel(x.tel) + '" onclick="event.stopPropagation()">📞</a>' : '<span style="opacity:.5;font-size:11px;white-space:nowrap">📵 raqam yo\'q</span>') + '</div>';
   const filtr = TXT === 'p' ? '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '">' :
     '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><div class="row"><select id="txm"><option value="0">💰 Balans: hammasi</option>' + [15000, 50000, 100000, 200000].map(v => '<option value="' + v + '"' + (TXM === v ? ' selected' : '') + '>≥ ' + pul(v) + '</option>').join('') +
     '</select><select id="txk"><option value="0">📅 Kelmagan: hammasi</option>' + [40, 60, 90, 180].map(v => '<option value="' + v + '"' + (TXK === v ? ' selected' : '') + '>≥ ' + v + ' kun</option>').join('') + '</select></div>';
@@ -344,6 +344,9 @@ function txChiz(r, eski) {
   $('#txq').onchange = e => { TXQ = e.target.value; TXS = 1; tirox(); };
   if ($('#txm')) { $('#txm').onchange = e => { TXM = Number(e.target.value); TXS = 1; tirox(); }; $('#txk').onchange = e => { TXK = Number(e.target.value); TXS = 1; tirox(); }; }
 }
+const txTel = t => { let d = String(t || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d.length >= 11 ? d : ''; };
+const txRaqam = d => d ? '+' + d.slice(0, 3) + ' ' + d.slice(3, 5) + ' ' + d.slice(5, 8) + ' ' + d.slice(8, 10) + ' ' + d.slice(10) : '';
+function txNusxa(r) { try { navigator.clipboard.writeText('+' + r); toast('📋 Nusxalandi'); } catch (e) { toast('+' + r); } }
 const TXTUR = { '+': ['➕', "bonus tushdi", '#4caf50'], '-': ['➖', 'bonus ishlatdi', '#e5484d'], x: ['⌛', 'bonus kuyib ketdi', '#d99a00'], v: ['🛍', 'xarid', '#8ab4ff'] };
 async function txMijoz(kod) {
   sarl('Mijoz', 'Tirox kartasi'); yuk();
@@ -356,13 +359,17 @@ async function txMijoz(kod) {
     }
     const t = c.tarix.length ? c.tarix.map(e => { const z = TXTUR[e.t] || ['•', e.t, '#aaa']; return '<div class="it"><div class="m"><b style="color:' + z[2] + '">' + z[0] + ' ' + (e.t === 'v' ? pul(e.x) + " so'm " : pul(e.m) + ' ') + z[1] + '</b><span>' + esc(e.s) + ' ' + esc(e.v) + (e.xod && e.xod !== "Ko'rsatilmagan" ? ' · ' + esc(e.xod) : '') + '</span></div>' + (e.t === 'v' ? '' : '<div class="r" style="font-size:13px;color:#fff">balans ' + pul(e.b) + '</div>') + '</div>'; }).join('') : '<span style="color:#aaa">Hali amal yo\'q</span>';
     const al = c.aloqalar.length ? c.aloqalar.map(a => '<div class="it"><div class="m"><b>' + esc(a.n) + (a.vada ? ' · ' + esc(a.vada) + ' da keladi' : '') + '</b><span>' + esc(a.s) + ' · ' + esc(a.kim) + '</span></div></div>').join('') : '<span style="color:#aaa">Hali aloqa bo\'lmagan</span>';
-    E.innerHTML = '<div class="kt"><b style="font-size:17px">' + esc(c.ism || '—') + '</b><br><span style="color:#aaa">' + esc(c.tel) + '</span>' +
-      '<a class="btn" style="text-decoration:none" href="tel:+' + String(c.tel).replace(/\D/g, '') + '">📞 Qo\'ng\'iroq qilish</a>' +
-      '<div class="g2">' + k('💳 Hozirgi balans', pul(c.bal), c.kuy ? '🔥 ' + pul(c.kuy) + ' kuyadi' : '') + k('🏪 Oxirgi tashrif', c.vis || '—', c.kun !== null ? c.kun + ' kun oldin' : '') +
-      k('🛒 Tashriflar', c.visN, c.roy ? "ro'yxatdan " + c.roy : '') + k('📱 Karta', c.on ? 'o\'rnatilgan' : "o'rnatilmagan", '') + '</div></div>' +
-      '<div class="kt"><b>📊 Balans tarixi</b>' + grafik + t + '</div>' +
+    const tl = txTel(c.tel);
+    const qor = c.on && c.kuy ? '<div style="margin:10px 0;padding:10px 12px;border-radius:12px;background:#3a2a00;color:#ffd27a;font-size:13px">🔥 <b>' + pul(c.kuy) + " so'm</b> bonusi tez orada kuyadi — qo'ng'iroq qiling</div>" : '';
+    E.innerHTML = '<div class="kt"><b style="font-size:18px">' + esc(c.ism || '—') + '</b>' +
+      (tl ? '<div style="margin:10px 0 2px;font-size:22px;font-weight:700;letter-spacing:.3px">' + txRaqam(tl) + '</div>' +
+        '<div class="row" style="margin-top:8px"><a class="btn" style="text-decoration:none;margin:0" href="tel:+' + tl + '">📞 Qo\'ng\'iroq</a><button class="btn btn2" style="margin:0" onclick="txNusxa(\'' + tl + '\')">📋 Raqamni nusxalash</button></div>'
+        : '<div style="margin:10px 0;padding:10px 12px;border-radius:12px;background:#2a1a1a;color:#ff9b9b;font-size:13px">📵 Bu mijozning telefon raqami Tirox\'da yo\'q. Qo\'ng\'iroq qilib bo\'lmaydi.</div>') + qor + '</div>' +
+      '<div class="g2">' + k('💳 Balans', pul(c.bal) + " so'm", '') + k('🏪 Oxirgi xarid', c.vis || '—', c.kun !== null ? c.kun + ' kun oldin' : '') + '</div>' +
+      '<div class="kt" style="font-size:13px;color:#bbb">🛒 Jami ' + c.visN + ' marta kelgan' + (c.roy ? ' · ro\'yxatdan ' + c.roy : '') + ' · ilova: ' + (c.on ? "o'rnatilgan ✅" : "o'rnatilmagan ❌") + '</div>' +
+      '<div class="kt"><b>📊 Balans tarixi</b><br>' + grafik + t + '</div>' +
       '<div class="kt"><b>📞 Aloqa tarixi</b><br>' + al + '</div>' +
-      '<div class="kt"><b>Natijani belgilang</b><div class="g2">' + [['k', '✅ Keladi'], ['o', "🤔 O'ylab ko'radi"], ['t', "📵 Ko'tarmadi"], ['x', '🚫 Kelmaydi'], ['r', '❓ Raqam xato'], ['b', '📝 Boshqa']].map(([c2, n]) => '<button class="btn btn2" style="margin:0" onclick="txNat(\'' + esc(kod) + '\',\'' + c2 + '\')">' + n + '</button>').join('') + '</div></div>';
+      '<div class="kt"><b>Qo\'ng\'iroq natijasi qanday bo\'ldi?</b><div class="g2" style="margin-top:8px">' + [['k', '✅ Keladi'], ['o', "🤔 O'ylab ko'radi"], ['t', "📵 Ko'tarmadi"], ['x', '🚫 Kelmaydi'], ['r', '❓ Raqam xato'], ['b', '📝 Boshqa']].map(([c2, n]) => '<button class="btn btn2" style="margin:0" onclick="txNat(\'' + esc(kod) + '\',\'' + c2 + '\')">' + n + '</button>').join('') + '</div></div>';
   } catch (e) { E.innerHTML = ''; xato(e); }
 }
 function txNat(kod, c) {
