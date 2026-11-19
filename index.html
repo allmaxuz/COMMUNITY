@@ -68,7 +68,7 @@ function toast(t) { const d = document.createElement('div'); d.className = 'toas
 // Ma'lumot manzili: GitHub'da — ?api=… (bot beradi, KONTENT ilovasi bilan bir xil); Apps Script ichida — google.script.run
 const GAS = !!(window.google && google.script && google.script.run);
 const API_URL = (() => { const q = new URLSearchParams(location.search); let u = q.get('api') || q.get('s') || ''; try { if (u) localStorage.setItem('cm_api', u); else u = localStorage.getItem('cm_api') || ''; } catch (e) {} return u; })();
-function api(m, a) {
+function api0(m, a) {
   if (GAS && JIM) a = Object.assign({}, a, { jim: 1 });
   if (GAS) return new Promise((ok, no) => google.script.run.withSuccessHandler(s => { const j = JSON.parse(s); j.ok ? ok(j.r) : no(new Error(j.xato)); }).withFailureHandler(e => no(e)).api(INIT, m, a || {}));
   if (JIM) a = Object.assign({}, a, { jim: 1 });
@@ -77,21 +77,46 @@ function api(m, a) {
     .then(j => { if (!j.ok) throw new Error(j.xato); return j.r; })
     .catch(e => { throw new Error(/Failed to fetch|NetworkError|Load failed/i.test(e.message) ? "Internet yoki server bilan aloqa yo'q — qayta urinib ko'ring" : e.message); });
 }
+// Ekran almashganda eski so'rovning javobi yangi ekranni buzmasin: faqat o'qish so'rovlari tashlab yuboriladi
+let NAV = 0;
+const OQISH = /^(asosiy|xulosa|chatlar|yozishma|kommentlar|dastafkalar|savdo|qongiroq|karta|tahlil|tiroxTez|tiroxMijoz|tiroxXulosa|tirox|olSon|olTop|reklama|eslatmalar|tayyor|jamoa|tizim|javobTezligi|shablon|aiXarajat|qayta|qidir|telTop)$/;
+function api(m, a) {
+  const nav = NAV, p = api0(m, a);
+  return OQISH.test(m) ? p.then(r => nav !== NAV ? new Promise(() => {}) : r, e => nav !== NAV ? new Promise(() => {}) : Promise.reject(e)) : p;
+}
+const KESH_YOQ = /^(aiBet|koproq)$/;
+function pill(t) {
+  let p = document.getElementById('yan');
+  if (!p) { p = document.createElement('div'); p.id = 'yan'; p.style.cssText = 'position:fixed;top:6px;right:8px;z-index:50;font-size:11px;padding:2px 8px;border-radius:10px;background:#1b7a43;color:#fff;opacity:.9;pointer-events:none'; document.body.appendChild(p); }
+  p.textContent = t || ''; p.style.display = t ? '' : 'none';
+}
+function snap(fn, a) {
+  if (KESH_YOQ.test(fn.name)) return;
+  const h = E.innerHTML; if (h.length > 250000 || /class="(xato|yuk)"/.test(h)) return;
+  const k = 'sk|' + fn.name + '|' + JSON.stringify(a);
+  try { localStorage.setItem(k, h); } catch (e) { try { Object.keys(localStorage).filter(z => z.indexOf('sk|') === 0).forEach(z => localStorage.removeItem(z)); } catch (e2) {} }
+}
 function xato(e) { if (JIM) return; E.insertAdjacentHTML('afterbegin', '<div class="xato">❌ ' + esc(e.message || e) + '</div>'); }
 let JIM = false;                                               // jim yangilanish: «yuklanmoqda» ko'rsatilmaydi
 function yuk() { if (!JIM) E.innerHTML = '<div class="yuk">⏳ yuklanmoqda…</div>'; }
 // Ochiq ekran (Asosiy, Xabarlar, yozishma) har 15 soniyada o'zi yangilanadi. Ilova yopiq/fon'da, oyna ochiq yoki yozayotganda — yangilanmaydi
-const YANGILASH_SON = 15;
+const YANGILASH_SON = 10;
 setInterval(() => {
   if (document.hidden || JIM || document.querySelector('.modal')) return;
   const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
   const t = tarix[tarix.length - 1]; if (!t || [asosiy, xabarlar, yozishma].indexOf(t[0]) < 0) return;
   const y = window.scrollY, pastda = window.innerHeight + y >= document.body.scrollHeight - 40;
-  JIM = true;
-  Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { JIM = false; window.scrollTo(0, t[0] === yozishma && pastda ? document.body.scrollHeight : y); });
+  const my = NAV; JIM = true; pill('🔄 yangilanmoqda…');
+  Promise.resolve(t[0](...t[1])).catch(() => {}).finally(() => { if (my !== NAV) return; JIM = false; pill(''); snap(t[0], t[1]); window.scrollTo(0, t[0] === yozishma && pastda ? document.body.scrollHeight : y); });
 }, YANGILASH_SON * 1000);
 function sarl(a, b) { $('#sarl').textContent = a; $('#ost').textContent = b || ''; }
-function bet(fn, ...a) { tarix.push([fn, a]); $('#orq').style.display = tarix.length > 1 ? '' : 'none'; window.scrollTo(0, 0); fn(...a); }
+function bet(fn, ...a) {
+  tarix.push([fn, a]); $('#orq').style.display = tarix.length > 1 ? '' : 'none'; window.scrollTo(0, 0);
+  const my = ++NAV; JIM = false; pill('');
+  let ks = ''; if (!KESH_YOQ.test(fn.name)) try { ks = localStorage.getItem('sk|' + fn.name + '|' + JSON.stringify(a)) || ''; } catch (e) {}
+  if (ks) { E.innerHTML = ks; JIM = true; pill('🔄 yangilanmoqda…'); }   // oxirgi ko'rilgan holat darhol, yangisi fonda
+  Promise.resolve(fn(...a)).catch(() => {}).finally(() => { if (my !== NAV) return; JIM = false; pill(''); snap(fn, a); });
+}
 function orqaga() { tarix.pop(); const x = tarix.pop(); if (x) bet(x[0], ...x[1]); }
 function tabla(t) { document.querySelectorAll('.tab button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); tarix = []; bet({ asosiy, xabarlar, dastafka, ai: aiBet, koproq }[t]); }
 document.querySelectorAll('.tab button').forEach(b => b.onclick = () => tabla(b.dataset.t));
