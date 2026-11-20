@@ -492,11 +492,11 @@ async function qidir(q) {
     if (v.length < 2) { $('#qh').textContent = 'Telefon, ism, barkod yoki dastafka raqamini yozing (kamida 2 belgi)'; $('#ql').innerHTML = ''; return; }
     $('#qh').textContent = '⏳ «' + v + '» — ' + tur(v) + ' bo\'yicha qidirilmoqda…';
     try {
-      const r = await api('qidir', { q: v });
+      const [r, tv0] = await Promise.all([api('qidir', { q: v }), api('qidirTovar', { q: v }).catch(e => ({ xato: e.message }))]);
       if (id !== S) return;
-      window.QR = r;
-      $('#qh').textContent = '«' + v + '» — ' + tur(v) + ' bo\'yicha: ' + (r.length ? r.length + ' ta topildi' : 'hech narsa topilmadi');
-      $('#ql').innerHTML = r.map((g, gi) => {
+      window.QR = r; const tv = Array.isArray(tv0) ? tv0 : [];
+      $('#qh').textContent = '«' + v + '» — ' + tur(v) + ' bo\'yicha: ' + (r.length || tv.length ? (tv.length ? '🏬 ' + tv.length + ' ta showroom tovar' : '') + (tv.length && r.length ? ' · ' : '') + (r.length ? '📦 ' + r.length + ' ta dastafka yozuvi' : '') : 'hech narsa topilmadi') + (tv0.xato ? ' · ⚠️ showroom: ' + tv0.xato : '');
+      $('#ql').innerHTML = (tv.length ? '<div class="kt"><b>🏬 Showroom (MoySklad)</b>' + tv.map(t => '<div style="font-size:12.5px;margin-top:5px">' + esc(t.nom) + (t.olcham ? ' · ' + esc(t.olcham) : '') + '<br><span style="color:#aaa">🏷 ' + esc(t.bk) + ' · ' + esc(t.ombor) + ' · qoldiq: <b>' + esc(t.soni) + '</b>' + (t.bron && t.bron !== '0' ? ' (bron ' + esc(t.bron) + ')' : '') + ' · ' + esc(t.narx) + ' so\'m</span></div>').join('') + '</div>' : '') + r.map((g, gi) => {
         const ds = (g.dast || []).filter((x, i, a) => x !== '' && a.indexOf(x) === i).join(', ');
         return '<div class="kt"><b>' + esc(g.sana) + ' · ' + esc(g.ism) + '</b> · ' + esc(g.ilova) + ' · ' + esc(g.sotuvchi) + (ds ? ' · 📦 №' + esc(ds) : '') + '<br><span style="color:#aaa;font-size:12px">' + esc(g.tel) + ' · ' + esc(g.vil) + ', ' + esc(g.manzil) + '</span>' +
           g.tovar.map((t, i) => '<div style="font-size:12.5px;margin-top:4px">' + esc(t.mah) + ' · ' + esc(t.model) + ' · ' + esc(t.olcham) + ' · ' + esc(t.rang) + ' · ' + t.soni + ' × ' + pul(t.narx) + (t.barkod ? ' <span style="color:#777">🏷 ' + esc(t.barkod) + '</span>' : '') + ' <span style="color:#777">' + g.rows[i] + '-qator</span></div>').join('') +
