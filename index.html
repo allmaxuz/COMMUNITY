@@ -479,17 +479,35 @@ async function aiXarajat(d) {
   } catch (e) { xato(e); }
 }
 async function qidir(q) {
-  sarl('Qidirish va tahrir', 'telefon · ism · barkod');
-  E.innerHTML = '<input id="qq" placeholder="🔎 94 785 85 52" value="' + esc(q || '') + '"><div id="ql"></div>';
-  $('#qq').onchange = e => qidir(e.target.value);
-  if (!q) return;
-  $('#ql').innerHTML = '<div class="yuk">⏳</div>';
-  try {
-    const r = await api('qidir', { q }); window.QR = r;
-    $('#ql').innerHTML = r.map((g, gi) => '<div class="kt"><b>' + esc(g.sana) + ' · ' + esc(g.ism) + '</b> · ' + esc(g.ilova) + ' · ' + esc(g.sotuvchi) + '<br><span style="color:#aaa;font-size:12px">' + esc(g.tel) + ' · ' + esc(g.vil) + ', ' + esc(g.manzil) + '</span>' +
-      g.tovar.map((t, i) => '<div style="font-size:12.5px;margin-top:4px">' + esc(t.mah) + ' · ' + esc(t.model) + ' · ' + esc(t.olcham) + ' · ' + esc(t.rang) + ' · ' + t.soni + ' × ' + pul(t.narx) + ' <span style="color:#777">' + g.rows[i] + '-qator</span></div>').join('') +
-      '<button class="btn kichik btn2" onclick="tahrir(' + gi + ')">✏️ Tahrirlash</button></div>').join('') || '<div class="kt">Topilmadi</div>';
-  } catch (e) { $('#ql').innerHTML = ''; xato(e); }
+  sarl('Qidirish va tahrir', 'telefon · ism · barkod · dastafka №');
+  E.innerHTML = '<input id="qq" inputmode="search" autocomplete="off" placeholder="🔎 Telefon, ism, barkod yoki dastafka №" value="' + esc(q || '') + '"><div id="qh" style="color:#8a8a8a;font-size:12px;margin:6px 2px"></div><div id="ql"></div>';
+  let T = null, S = 0;
+  const tur = v => {
+    const c = v.replace(/[\s+\-()]/g, ''), d = c.replace(/\D/g, '');
+    if (d && d.length === c.length) return d.length >= 13 ? '🏷 barkod' : d.length >= 7 ? '📞 telefon' : '📞 telefon oxiri yoki 📦 dastafka №';
+    return '👤 ism · 🛍 mahsulot · 📦 dastafka №';
+  };
+  const go = async () => {
+    const v = $('#qq').value.trim(), id = ++S;
+    if (v.length < 2) { $('#qh').textContent = 'Telefon, ism, barkod yoki dastafka raqamini yozing (kamida 2 belgi)'; $('#ql').innerHTML = ''; return; }
+    $('#qh').textContent = '⏳ «' + v + '» — ' + tur(v) + ' bo\'yicha qidirilmoqda…';
+    try {
+      const r = await api('qidir', { q: v });
+      if (id !== S) return;
+      window.QR = r;
+      $('#qh').textContent = '«' + v + '» — ' + tur(v) + ' bo\'yicha: ' + (r.length ? r.length + ' ta topildi' : 'hech narsa topilmadi');
+      $('#ql').innerHTML = r.map((g, gi) => {
+        const ds = (g.dast || []).filter((x, i, a) => x !== '' && a.indexOf(x) === i).join(', ');
+        return '<div class="kt"><b>' + esc(g.sana) + ' · ' + esc(g.ism) + '</b> · ' + esc(g.ilova) + ' · ' + esc(g.sotuvchi) + (ds ? ' · 📦 №' + esc(ds) : '') + '<br><span style="color:#aaa;font-size:12px">' + esc(g.tel) + ' · ' + esc(g.vil) + ', ' + esc(g.manzil) + '</span>' +
+          g.tovar.map((t, i) => '<div style="font-size:12.5px;margin-top:4px">' + esc(t.mah) + ' · ' + esc(t.model) + ' · ' + esc(t.olcham) + ' · ' + esc(t.rang) + ' · ' + t.soni + ' × ' + pul(t.narx) + (t.barkod ? ' <span style="color:#777">🏷 ' + esc(t.barkod) + '</span>' : '') + ' <span style="color:#777">' + g.rows[i] + '-qator</span></div>').join('') +
+          '<button class="btn kichik btn2" onclick="tahrir(' + gi + ')">✏️ Tahrirlash</button></div>';
+      }).join('') || '<div class="kt">Topilmadi. Boshqa yozilishda sinab ko\'ring (telefonning oxirgi raqamlari, ism qismi, barkod, dastafka №).</div>';
+    } catch (e) { if (id !== S) return; $('#ql').innerHTML = ''; $('#qh').textContent = ''; xato(e); }
+  };
+  $('#qq').oninput = () => { clearTimeout(T); T = setTimeout(go, 400); };
+  $('#qq').onkeydown = e => { if (e.key === 'Enter') { clearTimeout(T); go(); } };
+  go();
+  if (!q) $('#qq').focus();
 }
 const TZ = { 11: 'Ismi', 12: 'Telefoni', 13: 'Viloyat', 14: 'Manzil', 10: 'Ilova', 15: 'Sotuvchi', 2: 'Mahsulot', 3: 'Model', 4: "O'lcham", 5: 'Rangi', 8: 'Narx', 7: 'Soni', 6: 'Barkod' };
 function tahrir(gi) {
