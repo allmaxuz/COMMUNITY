@@ -494,9 +494,9 @@ async function qidir(q) {
     try {
       const [r, tv0] = await Promise.all([api('qidir', { q: v }), api('qidirTovar', { q: v }).catch(e => ({ xato: e.message }))]);
       if (id !== S) return;
-      window.QR = r; const tv = Array.isArray(tv0) ? tv0 : [];
+      window.QR = r; const tv = Array.isArray(tv0) ? tv0 : []; window.TV = tv;
       $('#qh').textContent = '«' + v + '» — ' + tur(v) + ' bo\'yicha: ' + (r.length || tv.length ? (tv.length ? '🏬 ' + tv.length + ' ta showroom tovar' : '') + (tv.length && r.length ? ' · ' : '') + (r.length ? '📦 ' + r.length + ' ta dastafka yozuvi' : '') : 'hech narsa topilmadi') + (tv0.xato ? ' · ⚠️ showroom: ' + tv0.xato : '');
-      $('#ql').innerHTML = (tv.length ? '<div class="kt"><b>🏬 Showroom (MoySklad)</b>' + tv.map(t => '<div style="font-size:12.5px;margin-top:5px">' + esc(t.nom) + (t.olcham ? ' · ' + esc(t.olcham) : '') + '<br><span style="color:#aaa">🏷 ' + esc(t.bk) + ' · ' + esc(t.ombor) + ' · qoldiq: <b>' + esc(t.soni) + '</b>' + (t.bron && t.bron !== '0' ? ' (bron ' + esc(t.bron) + ')' : '') + ' · ' + esc(t.narx) + ' so\'m</span></div>').join('') + '</div>' : '') + r.map((g, gi) => {
+      $('#ql').innerHTML = (tv.length ? '<div class="kt"><b>🏬 Showroom (MoySklad)</b>' + tv.map((t, ti) => '<div onclick="tovarOch(' + ti + ')" style="font-size:12.5px;margin-top:8px;padding:8px;border:1px solid #2a2a2a;border-radius:10px;cursor:pointer">' + esc(t.nom) + (t.olcham ? ' · ' + esc(t.olcham) : '') + '<br><span style="color:#aaa">🏷 ' + esc(t.bk) + ' · ' + esc(t.ombor) + ' · qoldiq: <b>' + esc(t.soni) + '</b>' + (t.bron && t.bron !== '0' ? ' (bron ' + esc(t.bron) + ')' : '') + ' · ' + esc(t.narx) + ' so\'m · <b style="color:#4caf50">batafsil ›</b></span></div>').join('') + '</div>' : '') + r.map((g, gi) => {
         const ds = (g.dast || []).filter((x, i, a) => x !== '' && a.indexOf(x) === i).join(', ');
         return '<div class="kt"><b>' + esc(g.sana) + ' · ' + esc(g.ism) + '</b> · ' + esc(g.ilova) + ' · ' + esc(g.sotuvchi) + (ds ? ' · 📦 №' + esc(ds) : '') + '<br><span style="color:#aaa;font-size:12px">' + esc(g.tel) + ' · ' + esc(g.vil) + ', ' + esc(g.manzil) + '</span>' +
           g.tovar.map((t, i) => '<div style="font-size:12.5px;margin-top:4px">' + esc(t.mah) + ' · ' + esc(t.model) + ' · ' + esc(t.olcham) + ' · ' + esc(t.rang) + ' · ' + t.soni + ' × ' + pul(t.narx) + (t.barkod ? ' <span style="color:#777">🏷 ' + esc(t.barkod) + '</span>' : '') + ' <span style="color:#777">' + g.rows[i] + '-qator</span></div>').join('') +
@@ -508,6 +508,18 @@ async function qidir(q) {
   $('#qq').onkeydown = e => { if (e.key === 'Enter') { clearTimeout(T); go(); } };
   go();
   if (!q) $('#qq').focus();
+}
+async function tovarOch(i) {
+  const t = (window.TV || [])[i]; if (!t) return;
+  const baza = String(t.nom).replace(/\s*\([^)]*\)\s*$/, '').trim();
+  const m = modal('<b>' + esc(baza) + '</b><div id="tg" style="margin-top:8px"><div class="yuk">⏳</div></div><button class="btn btn2" style="margin-top:8px" onclick="this.closest(\'.modal\').remove()">Yopish</button>');
+  try {
+    const r = await api('tovarGuruh', { nom: t.nom });
+    const n = x => Number(String(x).replace(/\D/g, '')) || 0, v = {};
+    r.forEach(x => { const k = x.olcham || x.nom; const e = v[k] || (v[k] = { k, bk: x.bk, narx: x.narx, om: {}, jami: 0 }); e.om[x.ombor] = (e.om[x.ombor] || 0) + n(x.soni); e.jami += n(x.soni); });
+    const list = Object.keys(v).map(k => v[k]), jami = list.reduce((s, e) => s + e.jami, 0);
+    m.querySelector('#tg').innerHTML = '<div style="margin-bottom:8px">Jami: <b>' + jami + ' dona</b> · ' + list.length + ' xil (rang / o\'lcham)</div>' + list.map(e => '<div class="kt" style="margin:6px 0"><b>' + esc(e.k) + '</b> — <b>' + e.jami + ' dona</b> · ' + esc(e.narx) + ' so\'m<br><span style="color:#aaa;font-size:12px">' + Object.keys(e.om).map(o => esc(o) + ': ' + e.om[o]).join(' · ') + '<br>🏷 ' + esc(e.bk) + '</span></div>').join('');
+  } catch (e) { toast('❌ ' + e.message); }
 }
 const TZ = { 11: 'Ismi', 12: 'Telefoni', 13: 'Viloyat', 14: 'Manzil', 10: 'Ilova', 15: 'Sotuvchi', 2: 'Mahsulot', 3: 'Model', 4: "O'lcham", 5: 'Rangi', 8: 'Narx', 7: 'Soni', 6: 'Barkod' };
 function tahrir(gi) {
