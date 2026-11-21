@@ -143,20 +143,21 @@ function davrOr() {
 }
 async function asosiy(d) {
   DAVR = d || DAVR; sarl('Community', MEN ? MEN.ism + ' · ' + MEN.rol : '');
-  const KK = 'as4|' + DAVR; let kesh = ''; try { kesh = localStorage.getItem(KK) || ''; } catch (e) {}
+  const KK = 'as5|' + (MEN && MEN.rol === 'Ega' ? 'e|' : 'x|') + DAVR; let kesh = ''; try { kesh = localStorage.getItem(KK) || ''; } catch (e) {}
   if (kesh && !JIM) E.innerHTML = kesh; else yuk();                                   // eski ma'lumot darhol, yangisi fonda
   try {
     const r = await api('asosiy', { davr: DAVR });
     const oral = DAVR.indexOf('..') > 0 ? DAVR.split('..') : null;
     const nom = oral ? oral.map(x => x.slice(8) + '.' + x.slice(5, 7) + '.' + x.slice(0, 4)).join('–') : ({ bugun: 'Bugun', kecha: 'Kecha', '7kun': 'Oxirgi 7 kun', oy: 'Shu oy', otgan_oy: "O'tgan oy" }[DAVR] || DAVR);
     const ig = Number(r.ig) || 0, tg = Number(r.tg) || 0, yozdi = ig + tg, ds = Number(r.dastafka) || 0, sm = Number(r.summa) || 0;
+    const ega = !!MEN && MEN.rol === 'Ega';   // konversiya (sotuvga aylandi %) — faqat Ega huquqi
     const ayl = yozdi ? Math.round(ds * 100 / yozdi) : null, ip = yozdi ? Math.round(ig * 100 / yozdi) : 50;
     const mini = (a, b, c) => '<div style="background:var(--q);border-radius:12px;padding:10px"><small style="display:block;color:var(--k);font-size:11px">' + a + '</small><b style="font-size:20px">' + b + '</b><div style="font-size:11px;color:var(--k)">' + (c || '') + '</div></div>';
     const bugunK = new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 10);
     const oraliq = '<div style="display:flex;gap:6px;align-items:center;margin:6px 0"><input type="date" id="dn" value="' + (oral ? oral[0] : '') + '" max="' + bugunK + '" style="flex:1;min-width:0"><span style="color:var(--k)">–</span><input type="date" id="dg" value="' + (oral ? oral[1] : '') + '" max="' + bugunK + '" style="flex:1;min-width:0"><button class="btn kichik" style="margin:0" onclick="davrOr()">OK</button></div>';
     E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') + oraliq +
       '<div class="kt"><small style="color:var(--k)">💰 Savdo · ' + esc(nom) + '</small><div style="display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 10px"><b style="font-size:26px">' + pul(sm) + " so'm</b><span>" + ozg(r.ozgarish.dastafka) + '</span></div>' +
-      '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">' + mini('✍️ Yozdi', yozdi, '') + mini('📦 Dastafka', ds, '') + mini('🎯 Sotuvga aylandi', ayl == null ? '—' : ayl + '%', ds + ' / ' + yozdi) + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(' + (ega ? 3 : 2) + ',minmax(0,1fr));gap:8px">' + mini('✍️ Yozdi', yozdi, '') + mini('📦 Dastafka', ds, '') + (ega ? mini('🎯 Sotuvga aylandi', ayl == null ? '—' : ayl + '%', ds + ' / ' + yozdi) : '') + '</div>' +
       '<div style="margin-top:10px"><div style="display:flex;height:8px;border-radius:4px;overflow:hidden"><div style="width:' + ip + '%;background:#e879f9"></div><div style="width:' + (100 - ip) + '%;background:#38bdf8"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--k);margin-top:3px"><span>📸 Instagram ' + ig + '</span><span>✈️ Telegram ' + tg + '</span></div></div></div>' +
       '<div class="kt"><div class="it" onclick="bet(javobTez)"><div class="m"><b>⏳ Javob tezligi</b></div><div class="r">' + (r.javobOrt == null ? '—' : "o'rtacha " + r.javobOrt + ' daq') + ' ›</div></div>' +
       '<div class="it" onclick="bet(qayta)"><div class="m"><b>↩️ Qaytdi (qayta yozgan)</b></div><div class="r">' + r.qaytdi + (r.qaytFoiz == null ? '' : ' · ' + r.qaytFoiz + '%') + ' ›</div></div></div>' +
