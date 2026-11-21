@@ -345,7 +345,7 @@ function koproq() {
     ['⏰', 'Eslatmalar', 'shaxsiy', 'eslatma'], ['💬', 'Tayyor javoblar', 'nusxa olish', 'tayyor'], ['⬇️', 'Yuklab olish', 'Excel botga keladi', 'yuklab']];
   if (MEN.rol !== 'Sotuvchi') l.push(['👥', 'Jamoa', 'odamlar va kodlar', 'jamoa'], ['⚙️', 'Tizim', 'holat, jurnal, tahrirlar', 'tizim']);
   if (MEN.rol === 'Ega') l.push(['📢', "E'lon", 'jamoaga xabar', 'elon']);
-  l.push(['🎁', 'Tirox', "xulosa va aloqa ro'yxatlari", 'tiroxBosh'], ['👕', "O'lchamlar", 'kim qaysi o\'lchamda', 'olcham']);
+  l.push(['🎁', 'Tirox', "xulosa va aloqa ro'yxatlari", 'tiroxBosh'], ['👕', "Mijoz ma'lumotlari", "o'lcham, ism, telefon bo'yicha qidirish", 'olcham']);
   if (MEN.rol === 'Ega') l.push(['💰', 'AI xarajat', 'token va $', 'aiXarajat']);
   l.push(['📖', "Qo'llanma", "har bo'lim qanday ishlaydi", 'qollanma']);
   E.innerHTML = '<div class="kt">' + l.map(([i, n, s, f]) => '<div class="it" onclick="bet(' + f + ')"><div class="av" style="background:' + (f === 'qollanma' ? 'var(--s)' : 'var(--y)') + ';color:#151515">' + i + '</div><div class="m"><b>' + n + '</b><span>' + s + '</span></div><div class="r">›</div></div>').join('') + '</div>';
@@ -468,7 +468,7 @@ async function pushYubor() {
 let OLQ = '';
 async function olcham(q) {
   if (q !== undefined) OLQ = q;
-  sarl("O'lchamlar", 'kim qaysi o\'lchamda'); yuk();
+  sarl("Mijoz ma'lumotlari", "o'lcham, ism, telefon"); yuk();
   try {
     E.innerHTML = '<input id="olq" placeholder="🔎 41 · L · shim 32 · ism · telefon" value="' + esc(OLQ) + '"><div id="oll"></div>';
     $('#olq').onchange = e => olcham(e.target.value);
