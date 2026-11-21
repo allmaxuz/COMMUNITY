@@ -138,26 +138,35 @@ const chipq = (l, on, fn) => '<div class="chips">' + l.map(([k, t]) => '<button 
 let DAVR = 'oy';
 async function asosiy(d) {
   DAVR = d || DAVR; sarl('Community', MEN ? MEN.ism + ' · ' + MEN.rol : '');
-  const KK = 'as|' + DAVR; let kesh = ''; try { kesh = localStorage.getItem(KK) || ''; } catch (e) {}
+  const KK = 'as2|' + DAVR; let kesh = ''; try { kesh = localStorage.getItem(KK) || ''; } catch (e) {}
   if (kesh && !JIM) E.innerHTML = kesh; else yuk();                                   // eski ma'lumot darhol, yangisi fonda
   try {
     const [r, x] = await Promise.all([api('asosiy', { davr: DAVR }), api('xulosa', { davr: DAVR }).catch(() => null)]);
-    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') + xulosaKarta(x) +
-      '<div class="g2">' +
-      k('📸 Instagram', r.ig, ozg(r.ozgarish.ig)) + k('✈️ Telegram', r.tg, ozg(r.ozgarish.tg)) +
-      k('📦 Dastafka', r.dastafka, pul(r.summa) + " so'm " + ozg(r.ozgarish.dastafka)) + k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx ?? '—') + ' $') +
-      k('⏳ Javob', r.javobOrt == null ? '—' : r.javobOrt + ' daq', '🔴 kech: ' + r.kech) + k('🗨 Komment', r.komment, 'botdan javob: ' + r.kommentBot) +
-      k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('↩️ Qaytdi', r.qaytdi, r.qaytFoiz == null ? '' : r.qaytFoiz + '%') + '</div>' +
-      '<div class="kt"><h4>⏳ Hozir javob kutyapti: ' + r.javobsizHozir + '</h4>' + (r.javobsizlar.map(chatQator).join('') || '<span style="color:#888">✅ hech kim</span>') + '</div>';
+    const js = r.javobsizlar || [], eng = js.reduce((m, c) => Math.max(m, c.javobsiz ? c.javobsiz.daq : 0), 0);
+    const dq = (ic, t, s, f) => '<div class="it" style="min-height:44px" onclick="bet(' + f + ')"><div class="m"><b>' + ic + ' ' + t + '</b>' + (s ? '<span>' + s + '</span>' : '') + '</div><div class="r">›</div></div>';
+    const ds = [];
+    if (r.javobsizHozir > 0) ds.push(dq('⏳', r.javobsizHozir + ' ta mijoz javob kutyapti', eng ? "eng uzog'i: " + eng + ' daq (ish vaqtida)' : '', "xabarlar,'javobsiz'"));
+    if (r.javobsizQ > 0) ds.push(dq('📞', r.javobsizQ + " ta qo'ng'iroq javobsiz", '', 'qongiroq'));
+    if (r.kech > 0) ds.push(dq('🔴', r.kech + ' ta kech javob', '', 'javobTez'));
+    const yozdi = x ? x.jami : (Number(r.ig) || 0) + (Number(r.tg) || 0), ayl = yozdi ? Math.round((Number(r.dastafka) || 0) * 100 / yozdi) : null;
+    const ig = Number(r.ig) || 0, tg = Number(r.tg) || 0, ip = ig + tg ? Math.round(ig * 100 / (ig + tg)) : 50;
+    const mini = (a, b, c) => '<div style="background:var(--q);border-radius:12px;padding:10px"><small style="display:block;color:var(--k);font-size:11px">' + a + '</small><b style="font-size:20px">' + b + '</b><div style="font-size:11px;color:var(--k)">' + (c || '') + '</div></div>';
+    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') +
+      '<div class="kt" style="border-color:' + (ds.length ? '#5a2a2a' : '#1f5a37') + '"><h4 style="color:' + (ds.length ? '#fca5a5' : '#86efac') + '">' + (ds.length ? 'Diqqat kerak' : '✅ Hammasi joyida — javob kutayotgan yo\'q') + '</h4>' + ds.join('') + js.map(chatQator).join('') + '</div>' +
+      '<div class="kt"><small style="color:var(--k)">💰 Savdo · ' + esc(x ? x.nom : DAVR) + '</small><div style="display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 10px"><b style="font-size:26px">' + pul(r.summa) + " so'm</b><span>" + ozg(r.ozgarish.dastafka) + '</span></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">' + mini('✍️ Yozdi', yozdi, x && x.ozg != null ? ozg(x.ozg) : '') + mini('📦 Dastafka', r.dastafka, '') + mini('🎯 Sotuvga aylandi', ayl == null ? '—' : ayl + '%', r.dastafka + ' / ' + yozdi) + '</div>' +
+      '<div style="margin-top:10px"><div style="display:flex;height:8px;border-radius:4px;overflow:hidden"><div style="width:' + ip + '%;background:#e879f9"></div><div style="width:' + (100 - ip) + '%;background:#38bdf8"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--k);margin-top:3px"><span>📸 Instagram ' + ig + '</span><span>✈️ Telegram ' + tg + '</span></div></div>' +
+      (x ? '<div style="font-size:12px;color:var(--k);margin-top:8px">' + "O'rtacha chek " + pul(x.ortachaChek) + " so'm · " + x.dona + ' dona</div>' + (x.matn || []).map(t => '<div style="margin-top:6px;font-size:13px">' + esc(t) + '</div>').join('') : '') + '</div>' +
+      '<div class="kt"><div class="it" onclick="bet(javobTez)"><div class="m"><b>⏳ Javob tezligi</b></div><div class="r">' + (r.javobOrt == null ? '—' : 'o\'rtacha ' + r.javobOrt + ' daq') + ' ›</div></div>' +
+      '<div class="it" onclick="bet(qayta)"><div class="m"><b>↩️ Qaytdi (qayta yozgan)</b></div><div class="r">' + r.qaytdi + (r.qaytFoiz == null ? '' : ' · ' + r.qaytFoiz + '%') + ' ›</div></div></div>' +
+      '<details class="kt"><summary style="min-height:32px;cursor:pointer;font-weight:600">Batafsil: Target, Komment, Qo\'ng\'iroq</summary><div class="g2">' +
+      k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx ?? '—') + ' $') + k('🗨 Komment', r.komment, 'botdan javob: ' + r.kommentBot) + k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('🔴 Kech javob', r.kech, '') + '</div></details>';
     try { localStorage.setItem(KK, E.innerHTML); } catch (e) {}
   } catch (e) { if (JIM) return; if (kesh) { $('#ost').textContent = "⚠️ eski ma'lumot"; return; } E.innerHTML = ''; xato(e); }
 }
-function xulosaKarta(x) {
-  if (!x) return '';
-  return '<div class="kt"><h4>🧾 Xulosa · ' + esc(x.nom) + '</h4><div class="g2">' +
-    k('✍️ Yozdi', x.jami, 'IG ' + x.ig + ' · TG ' + x.tg + (x.ozg == null ? '' : ' · ' + (x.ozg >= 0 ? '+' : '') + x.ozg + '%')) + k('📆 Kuniga', x.kuniga, "o'rtacha yozgan · " + x.kun + ' kun') +
-    k('💰 Savdo', pul(x.summa) + " so'm", x.dastafka + ' ta dastafka') + k("🧾 O'rtacha chek", pul(x.ortachaChek) + " so'm", x.dona + ' dona') + '</div>' +
-    (x.matn || []).map(t => '<div style="margin-top:6px;font-size:13px">' + esc(t) + '</div>').join('') + '</div>';
+async function jvYop(kalit) {
+  if (!await tasdiq("Bu suhbatga javob shart emasmi?\nRo'yxatdan olib tashlanadi.")) return;
+  try { const r = await api('jvYop', { kalit }); toast(r && r.ok ? '🚫 Yopildi' : 'Allaqachon yopilgan'); const on = document.querySelector('.tab button.on'); tabla(on ? on.dataset.t : 'asosiy'); } catch (e) { toast('❌ ' + e.message); }
 }
 const k = (a, b, c) => '<div class="k"><small>' + a + '</small><b>' + b + '</b><i>' + (c || '') + '</i></div>';
 
@@ -166,7 +175,7 @@ let XF = 'hammasi', XQ = '';
 function chatQator(c) {
   const j = c.javobsiz ? '<span class="pill ' + (c.javobsiz.ogoh === 'qizil' ? 'pr' : 'py') + '">' + c.javobsiz.daq + ' daq</span>' : '';
   return '<div class="it" onclick="bet(yozishma,' + esc(JSON.stringify(c.kanal)) + ',' + esc(JSON.stringify(c.conv)) + ',' + esc(JSON.stringify(c.mijoz)) + ')"><div class="av ' + (c.kanal === 'Instagram' ? 'ig' : 'tg') + '">' + esc((c.mijoz || '?')[0].toUpperCase()) + '</div>' +
-    '<div class="m"><b>' + esc(c.mijoz) + '</b><span>' + (c.kim === 'Biz' ? '🏪 ' : '') + esc(c.matn) + '</span></div><div class="r">' + sana(c.ms) + ' ' + vaqt(c.ms) + '<br>' + j + '</div></div>';
+    '<div class="m"><b>' + esc(c.mijoz) + '</b><span>' + (c.kim === 'Biz' ? '🏪 ' : '') + esc(c.matn) + '</span></div><div class="r">' + sana(c.ms) + ' ' + vaqt(c.ms) + '<br>' + j + (c.javobsiz && c.javobsiz.kalit ? '<br><button class="btn kichik btn2" style="margin:4px 0 0" onclick="event.stopPropagation();jvYop(' + esc(JSON.stringify(c.javobsiz.kalit)) + ')">🚫 Shart emas</button>' : '') + '</div></div>';
 }
 async function xabarlar(f) {
   XF = f || XF; sarl('Xabarlar', 'Instagram + Telegram');
