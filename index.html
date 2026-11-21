@@ -138,29 +138,16 @@ const chipq = (l, on, fn) => '<div class="chips">' + l.map(([k, t]) => '<button 
 let DAVR = 'oy';
 async function asosiy(d) {
   DAVR = d || DAVR; sarl('Community', MEN ? MEN.ism + ' · ' + MEN.rol : '');
-  const KK = 'as2|' + DAVR; let kesh = ''; try { kesh = localStorage.getItem(KK) || ''; } catch (e) {}
+  const KK = 'as3|' + DAVR; let kesh = ''; try { kesh = localStorage.getItem(KK) || ''; } catch (e) {}
   if (kesh && !JIM) E.innerHTML = kesh; else yuk();                                   // eski ma'lumot darhol, yangisi fonda
   try {
-    const [r, x] = await Promise.all([api('asosiy', { davr: DAVR }), api('xulosa', { davr: DAVR }).catch(() => null)]);
-    const js = r.javobsizlar || [], eng = js.reduce((m, c) => Math.max(m, c.javobsiz ? c.javobsiz.daq : 0), 0);
-    const dq = (ic, t, s, f) => '<div class="it" style="min-height:44px" onclick="bet(' + f + ')"><div class="m"><b>' + ic + ' ' + t + '</b>' + (s ? '<span>' + s + '</span>' : '') + '</div><div class="r">›</div></div>';
-    const ds = [];
-    if (r.javobsizHozir > 0) ds.push(dq('⏳', r.javobsizHozir + ' ta mijoz javob kutyapti', eng ? "eng uzog'i: " + eng + ' daq (ish vaqtida)' : '', "xabarlar,'javobsiz'"));
-    if (r.javobsizQ > 0) ds.push(dq('📞', r.javobsizQ + " ta qo'ng'iroq javobsiz", '', 'qongiroq'));
-    if (r.kech > 0) ds.push(dq('🔴', r.kech + ' ta kech javob', '', 'javobTez'));
-    const yozdi = x ? x.jami : (Number(r.ig) || 0) + (Number(r.tg) || 0), ayl = yozdi ? Math.round((Number(r.dastafka) || 0) * 100 / yozdi) : null;
-    const ig = Number(r.ig) || 0, tg = Number(r.tg) || 0, ip = ig + tg ? Math.round(ig * 100 / (ig + tg)) : 50;
-    const mini = (a, b, c) => '<div style="background:var(--q);border-radius:12px;padding:10px"><small style="display:block;color:var(--k);font-size:11px">' + a + '</small><b style="font-size:20px">' + b + '</b><div style="font-size:11px;color:var(--k)">' + (c || '') + '</div></div>';
+    const r = await api('asosiy', { davr: DAVR });
+    const nom = { bugun: 'Bugun', kecha: 'Kecha', '7kun': 'Oxirgi 7 kun', oy: 'Shu oy', otgan_oy: "O'tgan oy" }[DAVR] || DAVR;
+    const ds = Number(r.dastafka) || 0, sm = Number(r.summa) || 0;
+    const mini = (a, b, c) => '<div style="background:var(--q);border-radius:12px;padding:12px"><small style="display:block;color:var(--k);font-size:12px">' + a + '</small><b style="font-size:22px">' + b + '</b><div style="font-size:12px;color:var(--k);margin-top:2px">' + (c || '') + '</div></div>';
     E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], DAVR, 'asosiy') +
-      '<div class="kt" style="border-color:' + (ds.length ? '#5a2a2a' : '#1f5a37') + '"><h4 style="color:' + (ds.length ? '#fca5a5' : '#86efac') + '">' + (ds.length ? 'Diqqat kerak' : '✅ Hammasi joyida — javob kutayotgan yo\'q') + '</h4>' + ds.join('') + js.map(chatQator).join('') + '</div>' +
-      '<div class="kt"><small style="color:var(--k)">💰 Savdo · ' + esc(x ? x.nom : DAVR) + '</small><div style="display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 10px"><b style="font-size:26px">' + pul(r.summa) + " so'm</b><span>" + ozg(r.ozgarish.dastafka) + '</span></div>' +
-      '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">' + mini('✍️ Yozdi', yozdi, x && x.ozg != null ? ozg(x.ozg) : '') + mini('📦 Dastafka', r.dastafka, '') + mini('🎯 Sotuvga aylandi', ayl == null ? '—' : ayl + '%', r.dastafka + ' / ' + yozdi) + '</div>' +
-      '<div style="margin-top:10px"><div style="display:flex;height:8px;border-radius:4px;overflow:hidden"><div style="width:' + ip + '%;background:#e879f9"></div><div style="width:' + (100 - ip) + '%;background:#38bdf8"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--k);margin-top:3px"><span>📸 Instagram ' + ig + '</span><span>✈️ Telegram ' + tg + '</span></div></div>' +
-      (x ? '<div style="font-size:12px;color:var(--k);margin-top:8px">' + "O'rtacha chek " + pul(x.ortachaChek) + " so'm · " + x.dona + ' dona</div>' + (x.matn || []).map(t => '<div style="margin-top:6px;font-size:13px">' + esc(t) + '</div>').join('') : '') + '</div>' +
-      '<div class="kt"><div class="it" onclick="bet(javobTez)"><div class="m"><b>⏳ Javob tezligi</b></div><div class="r">' + (r.javobOrt == null ? '—' : 'o\'rtacha ' + r.javobOrt + ' daq') + ' ›</div></div>' +
-      '<div class="it" onclick="bet(qayta)"><div class="m"><b>↩️ Qaytdi (qayta yozgan)</b></div><div class="r">' + r.qaytdi + (r.qaytFoiz == null ? '' : ' · ' + r.qaytFoiz + '%') + ' ›</div></div></div>' +
-      '<details class="kt"><summary style="min-height:32px;cursor:pointer;font-weight:600">Batafsil: Target, Komment, Qo\'ng\'iroq</summary><div class="g2">' +
-      k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx ?? '—') + ' $') + k('🗨 Komment', r.komment, 'botdan javob: ' + r.kommentBot) + k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('🔴 Kech javob', r.kech, '') + '</div></details>';
+      '<div class="kt"><small style="color:var(--k)">💰 Savdo · ' + esc(nom) + '</small><div style="display:flex;justify-content:space-between;align-items:flex-end;margin:6px 0 12px"><b style="font-size:30px">' + pul(sm) + " so'm</b><span>" + ozg(r.ozgarish.dastafka) + '</span></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' + mini('📦 Dastafka', ds, 'ta') + mini("💵 O'rtacha dastafka", ds ? pul(sm / ds) : '—', ds ? "so'm" : '') + '</div></div>';
     try { localStorage.setItem(KK, E.innerHTML); } catch (e) {}
   } catch (e) { if (JIM) return; if (kesh) { $('#ost').textContent = "⚠️ eski ma'lumot"; return; } E.innerHTML = ''; xato(e); }
 }
