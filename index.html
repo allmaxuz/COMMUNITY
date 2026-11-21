@@ -524,19 +524,47 @@ async function tovarOch(i) {
   } catch (e) { toast('❌ ' + e.message); }
 }
 const TZ = { 11: 'Ismi', 12: 'Telefoni', 13: 'Viloyat', 14: 'Manzil', 10: 'Ilova', 15: 'Sotuvchi', 2: 'Mahsulot', 3: 'Model', 4: "O'lcham", 5: 'Rangi', 8: 'Narx', 7: 'Soni', 6: 'Barkod' };
-function tahrir(gi) {
-  const g = window.QR[gi];
-  const m = modal('<b>✏️ Nimani o\'zgartiramiz?</b><label>Maydon</label><select id="tc">' + Object.keys(TZ).map(c => '<option value="' + c + '">' + TZ[c] + '</option>').join('') + '</select>' +
-    '<label>Qaysi qator (mahsulot maydonlari uchun)</label><select id="tr">' + g.rows.map((r, i) => '<option value="' + r + '">' + r + ' · ' + esc(g.tovar[i].mah) + '</option>').join('') + '</select>' +
-    '<label>Yangi qiymat</label><input id="tq"><button class="btn" id="tok">✅ Saqlash</button>');
+async function tahrir(gi) {
+  const g = window.QR[gi]; if (!g) return;
+  if (!SHB) { try { SHB = await api('shablon'); } catch (e) { return toast('❌ ' + e.message); } }
+  const ex = (l, v) => v && l.indexOf(v) < 0 ? l.concat([v]) : l;
+  const S = (v) => (v == null ? '' : String(v));
+  const inp = (c, r, v, tip, n) => '<input data-c="' + c + '" data-r="' + r + '" data-n="' + esc(n) + '" data-o="' + esc(S(v)) + '" value="' + esc(S(v)) + '"' + (tip ? ' inputmode="' + tip + '"' : '') + '>';
+  const sl = (c, r, l, v, n) => '<select data-c="' + c + '" data-r="' + r + '" data-n="' + esc(n) + '" data-o="' + esc(S(v)) + '">' + opt(ex(l, S(v)), S(v)) + '</select>';
+  const L = (t, h) => '<label>' + t + '</label>' + h;
+  const mijoz = '<div class="kt"><b>👤 Mijoz (butun dastafkaga)</b>' + L('📞 Telefon', inp(12, '*', g.tel, 'tel', 'Telefon')) + L('👤 Ism', inp(11, '*', g.ism, '', 'Ism')) +
+    '<div class="row"><div>' + L('📍 Viloyat', sl(13, '*', SHB.vil, g.vil, 'Viloyat')) + '</div><div>' + L('📲 Ilova', sl(10, '*', SHB.ilovalar, g.ilova, 'Ilova')) + '</div></div>' +
+    L('🏠 Manzil', inp(14, '*', g.manzil, '', 'Manzil')) + L('🛍 Sotuvchi', sl(15, '*', SHB.sotuvchi, g.sotuvchi, 'Sotuvchi')) + '</div>';
+  const tovar = g.tovar.map((t, i) => { const r = g.rows[i], n = (i + 1) + '-tovar ';
+    return '<div class="kt"><b>' + (i + 1) + '-tovar · ' + r + '-qator</b>' + L('Mahsulot', sl(2, r, SHB.mah, t.mah, n + 'Mahsulot')) +
+      '<div class="row"><div>' + L('Model', inp(3, r, t.model, '', n + 'Model')) + '</div><div>' + L('Barkod', inp(6, r, t.barkod, 'numeric', n + 'Barkod')) + '</div></div>' +
+      '<div class="row"><div>' + L("O'lcham", sl(4, r, ['—'].concat(SHB.olcham), t.olcham, n + "O'lcham")) + '</div><div>' + L('Rang', sl(5, r, SHB.rang, t.rang, n + 'Rang')) + '</div></div>' +
+      '<div class="row"><div>' + L('Narx (0 mumkin)', inp(8, r, t.narx, 'numeric', n + 'Narx')) + '</div><div>' + L('Soni', '<div class="row"><button type="button" class="btn btn2" style="flex:none;width:44px" data-st="-1">−</button>' + inp(7, r, t.soni, 'numeric', n + 'Soni') + '<button type="button" class="btn btn2" style="flex:none;width:44px" data-st="1">+</button></div>') + '</div></div></div>'; }).join('');
+  const m = modal('<b>✏️ Dastafkani tahrirlash</b><div style="color:#8a8a8a;font-size:12px;margin:4px 0 8px">Hamma maydon ochiq. O\'zgargani sariq bo\'ladi, bitta «Saqlash» bilan yoziladi.</div>' + mijoz + tovar +
+    '<button class="btn" id="tok">✅ Saqlash</button><button class="btn btn2" id="tno">Yopish</button>');
+  const els = () => [...m.querySelectorAll('[data-c]')];
+  const bor = () => els().filter(el => S(el.value).trim() !== S(el.dataset.o).trim());
+  const yangila = () => { els().forEach(el => { el.style.borderColor = S(el.value).trim() !== S(el.dataset.o).trim() ? '#f59e0b' : ''; }); const n = bor().length; m.querySelector('#tok').textContent = n ? '✅ Saqlash (' + n + ' ta o\'zgarish)' : '✅ Saqlash'; };
+  m.addEventListener('input', yangila); m.addEventListener('change', yangila);
+  m.querySelectorAll('[data-st]').forEach(b => { b.onclick = () => { const el = b.parentNode.querySelector('input'); el.value = Math.max(1, (Number(el.value) || 1) + Number(b.dataset.st)); yangila(); }; });
+  m.querySelector('#tno').onclick = () => m.remove();
   m.querySelector('#tok').onclick = async () => {
-    const c = Number(m.querySelector('#tc').value), mijoz = [10, 11, 12, 13, 14, 15].indexOf(c) >= 0, rows = mijoz ? g.rows : [Number(m.querySelector('#tr').value)];
-    const v = m.querySelector('#tq').value.trim(); if (!v) return toast('Qiymat yozing');
-    if (!await tasdiq(TZ[c] + ' → ' + v + '\n(' + rows.join(', ') + '-qator)')) return;
-    const snap = JSON.stringify(JSON.parse(g.snap).filter((x, i) => rows.indexOf(g.rows[i]) >= 0));
-    try { const r = await api('tahrir', { rows, col: c, qiymat: v, snap }); m.remove(); toast('✅ Saqlandi: ' + r.qiymat); qidir($('#qq').value); } catch (e) { toast('❌ ' + e.message); }
+    const ch = bor(); if (!ch.length) return toast("O'zgarish yo'q");
+    const items = [];
+    ch.forEach(el => { const c = Number(el.dataset.c), v = S(el.value).trim(); if (el.dataset.r === '*') g.rows.forEach(r => items.push({ row: r, col: c, qiymat: v })); else items.push({ row: Number(el.dataset.r), col: c, qiymat: v }); });
+    if (!await tasdiq('Saqlaymizmi?\n\n' + ch.map(el => el.dataset.n + ': ' + (S(el.dataset.o) || '—') + ' → ' + (S(el.value).trim() || '—')).join('\n'))) return;
+    const tugma = m.querySelector('#tok'); tugma.disabled = true;
+    try {
+      const r = await api('tahrirKop', { rows: g.rows, items, snap: g.snap });
+      m.remove();
+      const m2 = modal('<b>✅ Saqlandi: ' + r.n + ' ta o\'zgarish</b><div style="color:#8a8a8a;font-size:12.5px;margin:6px 0">Xato bo\'lsa, hozir qaytarishingiz mumkin.</div><button class="btn btn2" id="qay">↩️ Qaytarish</button><button class="btn" id="yop">Yopish</button>');
+      const yop = () => { m2.remove(); qidir($('#qq') ? $('#qq').value : ''); };
+      m2.querySelector('#yop').onclick = yop; m2.onclick = e => { if (e.target === m2) yop(); };
+      m2.querySelector('#qay').onclick = async () => { try { await api('tahrirKop', { rows: g.rows, items: r.eski, snap: r.snap }); toast('↩️ Qaytarildi'); } catch (e) { toast('❌ ' + e.message); } yop(); };
+    } catch (e) { tugma.disabled = false; toast('❌ ' + e.message); }
   };
 }
+
 let SV = 'oy';
 async function savdo(d) {
   SV = d || SV; sarl('Savdo', ''); yuk();
