@@ -68,7 +68,9 @@ function toast(t) { const d = document.createElement('div'); d.className = 'toas
 // Ma'lumot manzili: GitHub'da — ?api=… (bot beradi, KONTENT ilovasi bilan bir xil); Apps Script ichida — google.script.run
 const GAS = !!(window.google && google.script && google.script.run);
 const API_URL = (() => { const q = new URLSearchParams(location.search); let u = q.get('api') || q.get('s') || ''; try { if (u) localStorage.setItem('cm_api', u); else u = localStorage.getItem('cm_api') || ''; } catch (e) {} return u; })();
+const PRE = {};   // ochilishda tez ketadigan so'rovlar oldindan yuboriladi (parallel)
 function api0(m, a) {
+  const PK = m + '|' + JSON.stringify(a || {}); if (PRE[PK]) { const pp = PRE[PK]; delete PRE[PK]; return pp; }
   if (GAS && JIM) a = Object.assign({}, a, { jim: 1 });
   if (GAS) return new Promise((ok, no) => google.script.run.withSuccessHandler(s => { const j = JSON.parse(s); j.ok ? ok(j.r) : no(new Error(j.xato)); }).withFailureHandler(e => no(e)).api(INIT, m, a || {}));
   if (JIM) a = Object.assign({}, a, { jim: 1 });
@@ -696,6 +698,7 @@ function boshla() {
     if (!/(^|&)hash=/.test(INIT)) {   // tashxis: qaysi maydonlar keldi (qiymatlarsiz)
       E.innerHTML = '<div class="xato">Telegram imzosi kelmadi. Kelgan maydonlar: ' + esc(INIT.split('&').map(x => x.split('=')[0]).join(', ')) + '</div>'; $('#ost').textContent = ''; return;
     }
+    ['asosiy', 'xulosa'].forEach(n => { const aa = { davr: DAVR }; const pp = api0(n, aa); pp.catch(() => {}); PRE[n + '|' + JSON.stringify(aa)] = pp; });
     api('men').then(m => { MEN = m; tabla('asosiy'); }).catch(e => { if (JIM) return; E.innerHTML = ''; xato(e); $('#ost').textContent = ''; });
   };
   if (window.google && google.script && google.script.url) google.script.url.getLocation(ol); else ol({ hash: location.hash });
