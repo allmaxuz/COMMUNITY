@@ -475,8 +475,22 @@ async function olcham(q) {
     if (!OLQ) { const s = await api('olSon'); $('#oll').innerHTML = s.map(g => '<div class="kt"><h4>' + esc(g.tur) + '</h4>' + g.royxat.map(z => '<button class="btn kichik btn2" onclick="olcham(\'' + esc(z.v) + '\')">' + esc(z.v) + ' (' + z.n + ')</button>').join(' ') + '</div>').join(''); return; }
     const r = await api('olTop', { q: OLQ });
     $('#oll').innerHTML = '<div class="g2">' + k('Mijoz', r.stat.soni) + k('Balans jami', pul(r.stat.balJami)) + k("Balans o'rtacha", pul(r.stat.balOrtacha)) + k('Summa', pul(r.stat.summa)) + '</div><div class="kt"><b>' + esc(r.nom) + '</b>' +
-      (r.royxat.map((c, i) => '<div class="it"><div class="m"><b>' + (i + 1) + '. ' + esc(c.ism || '—') + '</b><span>' + esc(c.sizes.join(', ')) + (c.bal !== null ? ' · 💳 ' + pul(c.bal) : '') + '</span></div><a class="r" href="tel:+' + String(c.tel).replace(/\D/g, '') + '">📞</a></div>').join('') || 'Topilmadi') + '</div>' +
-      '<div class="kt" style="font-size:12px;color:#aaa">📣 E\'lon va Excel — botda: 👕 O\'lchamlar.</div>';
+      (r.royxat.map((c, i) => '<div class="it" onclick="bet(olKartaOch,\'' + esc(c.t9) + '\')"><div class="m"><b>' + (i + 1) + '. ' + esc(c.ism || '—') + '</b><span>' + esc(c.sizes.join(', ')) + (c.bal !== null ? ' · 💳 ' + pul(c.bal) : '') + '</span></div><a class="r" onclick="event.stopPropagation()" href="tel:+' + String(c.tel).replace(/\D/g, '') + '">📞</a></div>').join('') || 'Topilmadi') + '</div>' +
+      '<div class="kt" style="font-size:12px;color:#aaa">📣 E\'lon va Excel — botda: 👕 Mijoz ma\'lumotlari.</div>';
+  } catch (e) { xato(e); }
+}
+async function olKartaOch(t9) {
+  sarl('Mijoz kartasi', "o'lcham, xaridlar, Tirox"); yuk();
+  try {
+    const c = await api('olKarta', { t9 });
+    const tel = String(c.tel || '').replace(/\D/g, '');
+    const oxir = c.oxirgi ? esc(c.oxirgi) + (c.kun != null ? ' (' + c.kun + ' kun oldin)' : '') : '—';
+    E.innerHTML = '<div class="kt"><h4>' + esc(c.ism || '—') + '</h4><div style="color:var(--k);font-size:13px">' + esc(c.vil || '') + '</div>' +
+      (tel ? '<a class="btn" href="tel:+' + tel + '" style="display:block;text-align:center;margin:10px 0 0">📞 +' + esc(tel) + '</a>' : '') + '</div>' +
+      '<div class="g2">' + k('Holat', esc(c.holat || '—'), '') + k('Dastafka soni', c.soni, '') + k('Summa', pul(c.summa) + " so'm", '') + k('Oxirgi dastafka', oxir, '') + '</div>' +
+      "<div class=\"kt\"><h4>👕 O'lchamlar</h4>" + (c.sizes.length ? c.sizes.map(z => '<span class="pill py" style="margin:2px">' + esc(z.v) + ' × ' + z.n + '</span>').join('') : '<span style="color:#888">Yo\'q</span>') + '</div>' +
+      '<div class="kt"><h4>📲 Kanal</h4>' + (c.kanal.length ? c.kanal.map(z => esc(z.k) + ': ' + z.n).join(' · ') : '—') + '</div>' +
+      '<div class="kt"><h4>🎁 Tirox</h4>' + (c.tirox ? 'Balans: <b>' + pul(c.tirox.bal) + "</b> · karta " + (c.tirox.on ? "o'rnatilgan" : "yo'q") : 'Tirox kartasi topilmadi') + '</div>';
   } catch (e) { xato(e); }
 }
 let AXD = 'oy';
