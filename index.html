@@ -197,7 +197,7 @@ async function asosiy(d) {
       '<div style="margin-top:10px"><div style="display:flex;height:8px;border-radius:4px;overflow:hidden"><div style="width:' + ip + '%;background:#e879f9"></div><div style="width:' + (100 - ip) + '%;background:#38bdf8"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--k);margin-top:3px"><span>📸 Instagram ' + ig + '</span><span>✈️ Telegram ' + tg + '</span></div></div></div>' +
       '<div class="kt"><div class="it" onclick="bet(javobTez)"><div class="m"><b>⏳ Javob tezligi</b></div><div class="r">' + (r.javobOrt == null ? '—' : "o'rtacha " + r.javobOrt + ' daq') + ' ›</div></div>' +
       '<div class="it" onclick="bet(qayta)"><div class="m"><b>↩️ Qaytdi (qayta yozgan)</b></div><div class="r">' + r.qaytdi + (r.qaytFoiz == null ? '' : ' · ' + r.qaytFoiz + '%') + ' ›</div></div></div>' +
-      '<div class="g2">' + k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx ?? '—') + ' $') + k('🗨 Komment', r.komment, 'botdan javob: ' + r.kommentBot) + k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('🔴 Kech javob', r.kech, '') + '</div>';
+      '<div class="g2">' + k('🎯 Target', r.target, '1 SMS ' + (r.smsNarx == null ? '—' : String(r.smsNarx).replace('.', ',')) + ' $') + k('🗨 Komment', r.komment, 'botdan javob: ' + r.kommentBot) + k("📞 Qo'ng'iroq", r.qongiroq, 'javobsiz: ' + r.javobsizQ) + k('🔴 Kech javob', r.kech, '') + '</div>';
     try { localStorage.setItem(KK, E.innerHTML); } catch (e) {}
   } catch (e) { if (JIM) return; if (kesh) { $('#ost').textContent = "⚠️ eski ma'lumot"; return; } E.innerHTML = ''; xato(e); }
 }
