@@ -136,6 +136,27 @@ const chipq = (l, on, fn) => '<div class="chips">' + l.map(([k, t]) => '<button 
 
 // ---------------- 🏠 Asosiy ----------------
 let DAVR = 'oy';
+// ---- Umumiy davr paneli: har bo'limda (Bugun / Kecha / 7 / 30 kun / Oy / O'tgan oy / 📅 Sana) ----
+const DV_L = [['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['30kun', '30 kun'], ['oy', 'Shu oy'], ['otgan_oy', "O'tgan oy"]];
+function davrPanel(cur, fn, hammasi) {
+  const oral = String(cur).indexOf('..') > 0 ? String(cur).split('..') : null, bk = new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 10);
+  return '<div class="chips">' + (hammasi ? [['barcha', 'Hammasi']] : []).concat(DV_L).map(([k, t]) => '<button class="chip' + (k === cur ? ' on' : '') + '" onclick="' + fn + '(\'' + k + '\')">' + t + '</button>').join('') +
+    '<button class="chip' + (oral ? ' on' : '') + '" onclick="this.parentNode.nextSibling.style.display=\'flex\'">📅 Sana</button></div>' +
+    '<div style="display:' + (oral ? 'flex' : 'none') + ';gap:6px;align-items:center;margin:0 0 8px"><input type="date" class="dn" value="' + (oral ? oral[0] : '') + '" max="' + bk + '" style="flex:1;min-width:0"><span style="color:var(--k)">–</span><input type="date" class="dg" value="' + (oral ? oral[1] : '') + '" max="' + bk + '" style="flex:1;min-width:0"><button class="btn kichik" onclick="davrQoy(this,\'' + fn + '\')">OK</button></div>';
+}
+function davrQoy(b, fn) { const r = b.parentNode, a = r.querySelector('.dn').value, c = r.querySelector('.dg').value; if (!a || !c || a > c) return toast("Sanani to'g'ri tanlang: dan ≤ gacha"); window[fn](a + '..' + c); }
+function davrOral(cur) {
+  const t = new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 10), q = n => new Date(Date.parse(t) - n * 864e5).toISOString().slice(0, 10), m = String(cur).match(/(\d{4}-\d\d-\d\d)\.\.(\d{4}-\d\d-\d\d)/);
+  if (m) return [m[1], m[2]];
+  if (cur === 'bugun') return [t, t]; if (cur === 'kecha') return [q(1), q(1)]; if (cur === '7kun') return [q(6), t]; if (cur === '30kun') return [q(29), t]; if (cur === 'oy') return [t.slice(0, 8) + '01', t];
+  if (cur === 'otgan_oy') { const p = new Date(Date.parse(t.slice(0, 8) + '01') - 864e5).toISOString().slice(0, 10); return [p.slice(0, 8) + '01', p]; }
+  return ['2000-01-01', t];
+}
+const msKun = ms => new Date(Number(ms) + 5 * 36e5).toISOString().slice(0, 10);
+let XD = 'barcha', KD = 'barcha', DD = 'barcha', JTD = 'oy';
+function xabarlarD(d) { XD = d; xabarlar(); }
+function kommentlarD(d) { KD = d; kommentlar(); }
+function dastafkaD(d) { DD = d; dastafka(); }
 function davrOr() {
   const dn = ($('#dn') || {}).value, dg = ($('#dg') || {}).value;
   if (!dn || !dg || dn > dg) { toast("Sanani to'g'ri tanlang: dan ≤ gacha"); return; }
@@ -182,9 +203,9 @@ async function xabarlar(f) {
   XF = f || XF; const f0 = XF; sarl('Xabarlar', 'Instagram + Telegram');
   if (XF === 'komment') return kommentlar();
   E.innerHTML = '<input id="xq" placeholder="🔎 Nik, ism yoki telefon" value="' + esc(XQ) + '">' +
-    chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], XF, 'xabarlar') + '<div id="xl" class="kt"><div class="yuk">⏳</div></div>';
+    chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], XF, 'xabarlar') + davrPanel(XD, 'xabarlarD', 1) + '<div id="xl" class="kt"><div class="yuk">⏳</div></div>';
   $('#xq').onchange = e => { XQ = e.target.value; xabarlar(); };
-  try { const r = await api('chatlar', { filtr: f0, q: XQ }); if (!$('#xl') || XF !== f0) return; $('#xl').innerHTML = (r.royxat.map(chatQator).join('') || '<span style="color:#888">Topilmadi</span>') + '<div style="color:#777;font-size:11px;margin-top:6px">' + r.jami + ' ta suhbat</div>'; }
+  try { const r = await api('chatlar', { filtr: f0, q: XQ, davr: XD }); if (!$('#xl') || XF !== f0) return; $('#xl').innerHTML = (r.royxat.map(chatQator).join('') || '<span style="color:#888">Topilmadi</span>') + '<div style="color:#777;font-size:11px;margin-top:6px">' + r.jami + ' ta suhbat</div>'; }
   catch (e) { if (!$('#xl')) return; xato(e); }
 }
 async function yozishma(kanal, conv, mijoz) {
@@ -206,10 +227,10 @@ async function yozishma(kanal, conv, mijoz) {
 // ---------------- 🗨 Kommentlar ----------------
 let KM = [];
 async function kommentlar() {
-  E.innerHTML = chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], 'komment', 'xabarlar') + '<div id="kl"><div class="yuk">⏳ Instagram\'da tekshirilmoqda…</div></div>';
+  E.innerHTML = chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], 'komment', 'xabarlar') + davrPanel(KD, 'kommentlarD', 1) + '<div id="kl"><div class="yuk">⏳ Instagram\'da tekshirilmoqda…</div></div>';
   try {
     const r = await api('kommentlar'); if (!$('#kl')) return; KM = r.royxat; window.TJ = r.tayyor;
-    const v = {}; KM.forEach(x => (v[x.havola || x.kontent] = v[x.havola || x.kontent] || []).push(x));
+    const [da, dg] = davrOral(KD), KL = KD === 'barcha' ? KM : KM.filter(x => { const q = msKun(x.ms); return q >= da && q <= dg; }), v = {}; KL.forEach(x => (v[x.havola || x.kontent] = v[x.havola || x.kontent] || []).push(x));
     $('#kl').innerHTML = (Object.keys(v).map(h => '<div class="kt"><h4>🎬 ' + esc(v[h][0].kontent || 'Video') + '</h4>' + (v[h][0].havola ? '<a style="color:#8ab4f8;font-size:12px" href="' + esc(v[h][0].havola) + '" target="_blank">' + esc(v[h][0].havola) + ' ↗</a>' : '') +
       v[h].map(x => '<div class="it"><div class="m"><b>@' + esc(x.muallif) + ' · ' + sana(x.ms) + '</b><span style="white-space:normal;color:#ddd">' + esc(x.matn) + '</span></div><button class="btn kichik" onclick="kmYoz(\'' + x.id + '\')">✍️</button></div>').join('') + '</div>').join('') ||
       '<div class="kt">✅ Javobsiz matnli izoh yo\'q</div>') + (KM.length > 1 ? '<button class="btn btn2" onclick="aiSor(\'Javobsiz kommentlarning hammasiga javob tayyorla\')">🤖 Hammasiga AI javob</button>' : '');
@@ -233,11 +254,11 @@ let DS = { tv: [], m: {} }, DSF = 'yangi';
 async function dastafka(f) {
   DSF = f || DSF; sarl('Dastafka', MEN ? MEN.sotuvchi || MEN.ism : '');
   if (!SHB) try { SHB = await api('shablon'); } catch (e) { return xato(e); }
-  E.innerHTML = chipq([['yangi', '➕ Yangi'], ['hammasi', 'Ro\'yxat'], ['Yangi', '🆕'], ["Yo'lda", '🚚'], ['Qaytdi', '↩️']], DSF, 'dastafka') + '<div id="dsb"></div>';
+  E.innerHTML = chipq([['yangi', '➕ Yangi'], ['hammasi', 'Ro\'yxat'], ['Yangi', '🆕'], ["Yo'lda", '🚚'], ['Qaytdi', '↩️']], DSF, 'dastafka') + (DSF === 'yangi' ? '' : davrPanel(DD, 'dastafkaD', 1)) + '<div id="dsb"></div>';
   if (DSF === 'yangi') return dsForma();
   $('#dsb').innerHTML = '<div class="yuk">⏳</div>';
   try {
-    const r = await api('dastafkalar', { filtr: DSF });
+    const r = await api('dastafkalar', { filtr: DSF, davr: DD });
     $('#dsb').innerHTML = r.royxat.map(x => '<div class="kt"><b>№' + x.no + ' · ' + esc(x.sana) + ' · ' + esc(x.ism) + '</b> <span class="pill ' + ({ 'Yangi': 'py', "Yo'lda": 'pb', 'Yetkazildi': 'pg', 'Qaytdi': 'pr', "O'chirildi": 'pr' }[x.holat] || '') + '">' + esc(x.holat) + '</span><br>' +
       '<span style="color:#bbb;font-size:12.5px">' + esc(x.mah) + '<br>💰 ' + esc(x.summa) + ' · 🛍 ' + esc(x.sotuvchi) + ' · ' + esc(x.vil) + (x.trek ? ' · trek ' + esc(x.trek) : '') + (x.sabab ? '<br><span class="dn">' + esc(x.sabab) + '</span>' : '') + '</span><br>' +
       '<button class="btn kichik btn2" onclick="bet(qidir,' + esc(JSON.stringify(x.tel)) + ')">✏️</button>'+'<button class="btn kichik btn2" onclick="dsHolat(' + x.no + ',\'Yo\\\'lda\')">🚚 Yo\'lda</button><button class="btn kichik" onclick="dsHolat(' + x.no + ',\'Yetkazildi\')">✅ Yetkazildi</button><button class="btn kichik btn2" onclick="dsHolat(' + x.no + ',\'Qaytdi\')">↩️ Qaytdi</button>' + (x.holat === "O'chirildi" ? '' : '<button class="btn kichik btn2" onclick="dsOchir(' + x.no + ')">🗑</button>') + '</div>').join('') || '<div class="kt">Bo\'sh</div>';
@@ -499,7 +520,7 @@ async function aiXarajat(d) {
   AXD = d || AXD; sarl('AI xarajat', 'token va $'); yuk();
   try {
     const h = await api('aiXarajat', { davr: AXD }), r = (a) => a.slice(0, 7).map(x => '<div style="font-size:13px;margin:4px 0">' + esc(x.nom) + ' · ' + x.soni + ' · ' + x.usd.toFixed(3) + ' $</div>').join('') || '—';
-    E.innerHTML = chipq([['bugun', 'Bugun'], ['7kun', '7 kun'], ['oy', 'Shu oy']], AXD, 'aiXarajat') +
+    E.innerHTML = davrPanel(AXD, 'aiXarajat') +
       '<div class="g2">' + k('Davr', h.jami.toFixed(3) + ' $') + k('Bugun', h.bugun.toFixed(3) + ' $') + k('Shu oy', h.oy.toFixed(2) + ' $ / ' + h.limit) + k('Oy oxiri', '~' + h.prognoz.toFixed(2) + ' $') + '</div>' +
       '<div class="kt"><h4>📌 Vazifa</h4>' + r(h.vazifa) + '</div><div class="kt"><h4>👤 Kim</h4>' + r(h.kim) + '</div><div class="kt" style="font-size:12px;color:#aaa">Narx taxminiy. Faqat CM so\'rovlari.</div>';
   } catch (e) { xato(e); }
@@ -595,7 +616,7 @@ async function savdo(d) {
   try {
     const s = await api('savdo', { davr: SV }), mx = a => Math.max(1, ...a.map(x => x.n));
     const ro = (n, a, k) => '<div class="kt"><h4>' + n + '</h4>' + a.slice(0, k || 6).map(x => '<div style="font-size:13px;margin:4px 0">' + esc(x.nom) + '<span class="bar" style="width:' + Math.round(x.n / mx(a) * 120) + 'px"></span>' + x.n + '</div>').join('') + '</div>';
-    E.innerHTML = chipq([['bugun', 'Bugun'], ['7kun', '7 kun'], ['oy', 'Oy'], ['otgan_oy', "O'tgan oy"]], SV, 'savdo') +
+    E.innerHTML = davrPanel(SV, 'savdo') +
       '<div class="g2">' + k('📦 Dastafka', s.dastafka) + k('💰 Summa', pul(s.summa)) + k("🧾 O'rtacha chek", pul(s.ortachaChek)) + k('↩️ Qaytdi', s.qaytdi) + '</div>' +
       ro("🏆 Eng ko'p sotilgan", s.mahsulot) + ro("📏 O'lcham", s.olcham) + ro('🎨 Rang', s.rang) + ro('🧑‍💼 Sotuvchilar', s.sotuvchi, 10) + ro('📍 Viloyat', s.viloyat) + ro('📲 Ilova', s.ilova);
   } catch (e) { if (JIM) return; E.innerHTML = ''; xato(e); }
@@ -605,7 +626,7 @@ async function qongiroq(d) {
   QD = d || QD; sarl("Qo'ng'iroqlar", 'MetaSell'); yuk();
   try {
     const q = await api('qongiroq', { davr: QD });
-    E.innerHTML = chipq([['bugun', 'Bugun'], ['kecha', 'Kecha'], ['7kun', '7 kun'], ['oy', 'Oy']], QD, 'qongiroq') +
+    E.innerHTML = davrPanel(QD, 'qongiroq') +
       '<div class="g2">' + k('📞 Jami', q.jami, 'kiruvchi ' + q.kiruvchi + ' · chiquvchi ' + q.chiquvchi) + k('❌ Javobsiz kiruvchi', '<span class="dn">' + q.javobsiz + '</span>', 'qayta qilinmagan ' + q.qaytaQilinmagan) +
       k('⭐ Sifat', q.ortachaBaho == null ? '—' : q.ortachaBaho, '/100') + k('⏱ O\'rtacha', Math.floor(q.ortachaDavom / 60) + ':' + ('0' + q.ortachaDavom % 60).slice(-2)) + '</div>' +
       (q.etirozlar.length ? '<div class="kt"><h4>🗣 E\'tirozlar</h4>' + q.etirozlar.map(e => esc(e.nom) + ' ' + e.n).join(' · ') + '</div>' : '') +
@@ -627,11 +648,11 @@ async function karta(q) {
       (c.chat ? '<button class="btn" onclick="bet(yozishma,' + esc(JSON.stringify(c.chat.kanal)) + ',' + esc(JSON.stringify(c.chat.conv)) + ',' + esc(JSON.stringify(c.chat.mijoz)) + ')">📜 Yozishma</button>' : '');
   } catch (e) { if (JIM) return; E.innerHTML = ''; xato(e); }
 }
-async function javobTez() {
-  sarl('Javob tezligi', 'shu oy'); yuk();
+async function javobTez(d) {
+  JTD = typeof d === 'string' ? d : JTD; sarl('Javob tezligi', ''); yuk();
   try {
-    const r = await api('javobTezligi', { davr: 'oy' });
-    E.innerHTML = '<div class="kt"><h4>⏳ Hozir kutyapti: ' + r.hozir.length + '</h4>' + (r.hozir.map(chatQator).join('') || '✅') + '</div><div class="kt"><h4>📊 Kim qanday</h4>' +
+    const r = await api('javobTezligi', { davr: JTD });
+    E.innerHTML = davrPanel(JTD, 'javobTez') + '<div class="kt"><h4>⏳ Hozir kutyapti: ' + r.hozir.length + '</h4>' + (r.hozir.map(chatQator).join('') || '✅') + '</div><div class="kt"><h4>📊 Kim qanday</h4>' +
       r.kim.map(x => '<div class="it"><div class="m"><b>' + esc(x.kim) + '</b><span>' + x.n + ' ta · o\'rtacha ' + x.ortacha + ' daq</span></div><div class="r">🔴 ' + x.qizil + '</div></div>').join('') + '</div>';
   } catch (e) { if (JIM) return; E.innerHTML = ''; xato(e); }
 }
