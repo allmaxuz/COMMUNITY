@@ -179,13 +179,13 @@ function chatQator(c) {
     '<div class="m"><b>' + esc(c.mijoz) + '</b><span>' + (c.kim === 'Biz' ? '🏪 ' : '') + esc(c.matn) + '</span></div><div class="r">' + sana(c.ms) + ' ' + vaqt(c.ms) + '<br>' + j + (c.javobsiz && c.javobsiz.kalit ? '<br><button class="btn kichik btn2" style="margin:4px 0 0" onclick="event.stopPropagation();jvYop(' + esc(JSON.stringify(c.javobsiz.kalit)) + ')">🚫 Shart emas</button>' : '') + '</div></div>';
 }
 async function xabarlar(f) {
-  XF = f || XF; sarl('Xabarlar', 'Instagram + Telegram');
+  XF = f || XF; const f0 = XF; sarl('Xabarlar', 'Instagram + Telegram');
   if (XF === 'komment') return kommentlar();
   E.innerHTML = '<input id="xq" placeholder="🔎 Nik, ism yoki telefon" value="' + esc(XQ) + '">' +
     chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], XF, 'xabarlar') + '<div id="xl" class="kt"><div class="yuk">⏳</div></div>';
   $('#xq').onchange = e => { XQ = e.target.value; xabarlar(); };
-  try { const r = await api('chatlar', { filtr: XF, q: XQ }); $('#xl').innerHTML = (r.royxat.map(chatQator).join('') || '<span style="color:#888">Topilmadi</span>') + '<div style="color:#777;font-size:11px;margin-top:6px">' + r.jami + ' ta suhbat</div>'; }
-  catch (e) { xato(e); }
+  try { const r = await api('chatlar', { filtr: f0, q: XQ }); if (!$('#xl') || XF !== f0) return; $('#xl').innerHTML = (r.royxat.map(chatQator).join('') || '<span style="color:#888">Topilmadi</span>') + '<div style="color:#777;font-size:11px;margin-top:6px">' + r.jami + ' ta suhbat</div>'; }
+  catch (e) { if (!$('#xl')) return; xato(e); }
 }
 async function yozishma(kanal, conv, mijoz) {
   sarl(mijoz, kanal); yuk();
@@ -208,12 +208,12 @@ let KM = [];
 async function kommentlar() {
   E.innerHTML = chipq([['hammasi', 'Hammasi'], ['ig', '📸 IG'], ['tg', '✈️ TG'], ['javobsiz', '⏳ Javobsiz'], ['komment', '🗨 Komment']], 'komment', 'xabarlar') + '<div id="kl"><div class="yuk">⏳ Instagram\'da tekshirilmoqda…</div></div>';
   try {
-    const r = await api('kommentlar'); KM = r.royxat; window.TJ = r.tayyor;
+    const r = await api('kommentlar'); if (!$('#kl')) return; KM = r.royxat; window.TJ = r.tayyor;
     const v = {}; KM.forEach(x => (v[x.havola || x.kontent] = v[x.havola || x.kontent] || []).push(x));
     $('#kl').innerHTML = (Object.keys(v).map(h => '<div class="kt"><h4>🎬 ' + esc(v[h][0].kontent || 'Video') + '</h4>' + (v[h][0].havola ? '<a style="color:#8ab4f8;font-size:12px" href="' + esc(v[h][0].havola) + '" target="_blank">' + esc(v[h][0].havola) + ' ↗</a>' : '') +
       v[h].map(x => '<div class="it"><div class="m"><b>@' + esc(x.muallif) + ' · ' + sana(x.ms) + '</b><span style="white-space:normal;color:#ddd">' + esc(x.matn) + '</span></div><button class="btn kichik" onclick="kmYoz(\'' + x.id + '\')">✍️</button></div>').join('') + '</div>').join('') ||
       '<div class="kt">✅ Javobsiz matnli izoh yo\'q</div>') + (KM.length > 1 ? '<button class="btn btn2" onclick="aiSor(\'Javobsiz kommentlarning hammasiga javob tayyorla\')">🤖 Hammasiga AI javob</button>' : '');
-  } catch (e) { $('#kl').innerHTML = ''; xato(e); }
+  } catch (e) { if (!$('#kl')) return; $('#kl').innerHTML = ''; xato(e); }
 }
 function kmYoz(id) {
   const x = KM.find(k => k.id === id);
