@@ -57,6 +57,13 @@ details p{white-space:pre-wrap;color:#ccc;font-size:13px;line-height:1.5}
 .k b{color:#fff}
 .kt{background:linear-gradient(160deg,rgba(79,191,94,.10),#1d1d1d 55%);border:1px solid rgba(79,191,94,.28);border-left:3px solid var(--y)}
 .kt h4{color:var(--y)}
+/* Yorqinroq kartalar */
+.k{background:linear-gradient(145deg,rgba(79,191,94,.38),#1a1a1a 75%);border-color:rgba(79,191,94,.70)}
+.g2 .k:nth-child(4n+2){background:linear-gradient(145deg,rgba(42,171,238,.38),#1a1a1a 75%);border-color:rgba(42,171,238,.70)}
+.g2 .k:nth-child(4n+3){background:linear-gradient(145deg,rgba(255,204,77,.34),#1a1a1a 75%);border-color:rgba(255,204,77,.70)}
+.g2 .k:nth-child(4n+4){background:linear-gradient(145deg,rgba(232,121,249,.34),#1a1a1a 75%);border-color:rgba(232,121,249,.70)}
+.kt{background:linear-gradient(160deg,rgba(79,191,94,.22),#1b1b1b 60%);border:1px solid rgba(79,191,94,.55);border-left:4px solid var(--y)}
+.axq{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}.axq:last-child{border-bottom:0}.axq i{font-style:normal;color:#9aa;margin-right:8px}.axq b{color:var(--s)}
 </style></head>
 <body>
 <div class="top"><div class="lg">«</div><div><b id="sarl">Community</b><small id="ost">yuklanmoqda…</small></div><button class="orq" id="orq" style="display:none" onclick="orqaga()">←</button></div>
@@ -527,9 +534,10 @@ let AXD = 'oy';
 async function aiXarajat(d) {
   AXD = d || AXD; sarl('AI xarajat', 'token va $'); yuk();
   try {
-    const h = await api('aiXarajat', { davr: AXD }), r = (a) => a.slice(0, 7).map(x => '<div style="font-size:13px;margin:4px 0">' + esc(x.nom) + ' · ' + x.soni + ' · ' + x.usd.toFixed(3) + ' $</div>').join('') || '—';
+    const h = await api('aiXarajat', { davr: AXD }), usd = n => (Number(n) || 0).toFixed(2).replace('.', ','), nm = t => /^\d+$/.test(String(t)) ? 'Boshqa' : String(t).replace(/_$/, ''),
+      r = (a) => a.slice(0, 7).map(x => '<div class="axq"><span>' + esc(nm(x.nom)) + '</span><span><i>' + pul(x.soni) + ' ta</i><b>' + usd(x.usd) + ' $</b></span></div>').join('') || '—';
     E.innerHTML = davrPanel(AXD, 'aiXarajat') +
-      '<div class="g2">' + k('Davr', h.jami.toFixed(3) + ' $') + k('Bugun', h.bugun.toFixed(3) + ' $') + k('Shu oy', h.oy.toFixed(2) + ' $ / ' + h.limit) + k('Oy oxiri', '~' + h.prognoz.toFixed(2) + ' $') + '</div>' +
+      '<div class="g2">' + k('Tanlangan davr', usd(h.jami) + ' $') + k('Bugun', usd(h.bugun) + ' $') + k('Shu oy', usd(h.oy) + ' $', 'limit ' + h.limit + ' $') + k('Oy oxiri', '~' + usd(h.prognoz) + ' $', 'shu tezlikda') + '</div>' +
       '<div class="kt"><h4>📌 Vazifa</h4>' + r(h.vazifa) + '</div><div class="kt"><h4>👤 Kim</h4>' + r(h.kim) + '</div><div class="kt" style="font-size:12px;color:#aaa">Narx taxminiy. Faqat CM so\'rovlari.</div>';
   } catch (e) { xato(e); }
 }
