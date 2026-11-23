@@ -28,6 +28,8 @@ main{padding:0 12px 90px}
 .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px}.pr{background:var(--r);color:#fff}.py{background:var(--s);color:var(--q)}.pg{background:var(--y);color:var(--q)}.pb{background:var(--b);color:#fff}
 .btn{display:block;width:100%;border:0;border-radius:14px;padding:12px;background:var(--y);color:var(--q);font-weight:800;font-size:14px;margin:8px 0}
 .btn2{background:var(--q3);color:#fff;font-weight:600}.btn.kichik{display:inline-block;width:auto;padding:7px 12px;font-size:12.5px;margin:3px 3px 3px 0}
+/* Filtr paneli (MoySklad uslubida) */
+.fp{background:#161616;border:1px solid #2b2b2b;border-radius:14px;padding:10px;margin:8px 0}.fp .fg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}.fp label{display:block;font-size:11.5px;color:#9a9a9a;margin:2px 2px 0}.fp input{margin:2px 0 4px}.fp .fb{display:flex;gap:8px;margin-top:6px}.fp .fb .btn{flex:1;margin:0}.fbtn{display:inline-block;width:auto;margin:4px 0 0;padding:8px 14px;font-size:13px}
 input,select,textarea{width:100%;background:#111;border:1px solid #333;border-radius:12px;color:#fff;padding:10px 12px;font-size:14px;font-family:inherit;margin:4px 0}
 textarea{min-height:90px}
 label{font-size:11.5px;color:var(--k);display:block;margin-top:6px}
@@ -503,14 +505,18 @@ async function pushYubor() {
   try { const r = await api('tiroxPush', { tur: PUSHT, matn: m }); PUSHM = ''; toast('✅ Navbatga qo\'yildi: ' + r.n + ' ta'); tiroxPush(); } catch (e) { toast('❌ ' + e.message); }
 }
 let OLQ = '';
+function olfQid() { OLF = fpOqi('olf'); olcham(OLF.olc || OLF.tel || OLF.ism || ''); }
+function olfTozala() { OLF = {}; olcham(''); }
 async function olcham(q) {
   if (q !== undefined) OLQ = q;
   sarl("Mijoz ma'lumotlari", "o'lcham, ism, telefon"); yuk();
   try {
-    E.innerHTML = '<input id="olq" placeholder="🔎 41 · L · shim 32 · ism · telefon" value="' + esc(OLQ) + '"><div id="oll"></div>';
+    E.innerHTML = '<input id="olq" placeholder="🔎 41 · L · shim 32 · ism · telefon" value="' + esc(OLQ) + '"><button class="btn btn2 fbtn" onclick="fpTogg(\'olf\')">⚙️ Filtr</button><div id="olf" class="fp" style="display:' + (Object.keys(OLF).length ? 'block' : 'none') + '">' + fpHtml([['ism', 'Ism'], ['tel', 'Telefon'], ['olc', "O'lcham / mahsulot"]], OLF, 'olfQid()', 'olfTozala()') + '</div><div id="oll"></div>';
     $('#olq').onchange = e => olcham(e.target.value);
     if (!OLQ) { const s = await api('olSon'); $('#oll').innerHTML = s.map(g => '<div class="kt"><h4>' + esc(g.tur) + '</h4>' + g.royxat.map(z => '<button class="btn kichik btn2" onclick="olcham(\'' + esc(z.v) + '\')">' + esc(z.v) + ' (' + z.n + ')</button>').join(' ') + '</div>').join(''); return; }
     const r = await api('olTop', { q: OLQ });
+    const OF = OLF;
+    if (OF.ism || OF.tel) { r.royxat = r.royxat.filter(c => (!OF.ism || fpN(c.ism).indexOf(fpN(OF.ism)) >= 0) && (!OF.tel || fpD(c.tel).indexOf(fpD(OF.tel)) >= 0)); const bl = r.royxat.filter(c => c.bal !== null), bj = bl.reduce((a, c) => a + c.bal, 0); r.stat = { soni: r.royxat.length, balJami: bj, balOrtacha: bl.length ? Math.round(bj / bl.length) : 0, summa: r.royxat.reduce((a, c) => a + (c.summa || 0), 0) }; }
     $('#oll').innerHTML = '<div class="g2">' + k('Mijoz', r.stat.soni) + k('Balans jami', pul(r.stat.balJami)) + k("Balans o'rtacha", pul(r.stat.balOrtacha)) + k('Summa', pul(r.stat.summa)) + '</div><div class="kt"><b>' + esc(r.nom) + '</b>' +
       (r.royxat.map((c, i) => '<div class="it" onclick="bet(olKartaOch,\'' + esc(c.t9) + '\')"><div class="m"><b>' + (i + 1) + '. ' + esc(c.ism || '—') + '</b><span>' + esc(c.sizes.join(', ')) + (c.bal !== null ? ' · 💳 ' + pul(c.bal) : '') + '</span></div><a class="r" onclick="event.stopPropagation()" href="tel:+' + String(c.tel).replace(/\D/g, '') + '">📞</a></div>').join('') || 'Topilmadi') + '</div>' +
       '<div class="kt" style="font-size:12px;color:#aaa">📣 E\'lon va Excel — botda: 👕 Mijoz ma\'lumotlari.</div>';
@@ -541,9 +547,18 @@ async function aiXarajat(d) {
       '<div class="kt"><h4>📌 Vazifa</h4>' + r(h.vazifa) + '</div><div class="kt"><h4>👤 Kim</h4>' + r(h.kim) + '</div><div class="kt" style="font-size:12px;color:#aaa">Narx taxminiy. Faqat CM so\'rovlari.</div>';
   } catch (e) { xato(e); }
 }
+let QF = {}, OLF = {};
+const fpN = x => String(x || '').toLowerCase().replace(/[\s'ʻʼ`’\-]/g, ''), fpD = x => String(x || '').replace(/\D/g, '');
+function fpHtml(maydon, qiy, ok, tozala) {
+  return '<div class="fg">' + maydon.map(m => '<div><label>' + m[1] + '</label><input data-f="' + m[0] + '" value="' + esc((qiy || {})[m[0]] || '') + '" onkeydown="if(event.key===\'Enter\')' + ok + '"></div>').join('') + '</div><div class="fb"><button class="btn" onclick="' + ok + '">Qidirish</button><button class="btn btn2" onclick="' + tozala + '">Tozalash</button></div>';
+}
+function fpOqi(id) { const o = {}; document.querySelectorAll('#' + id + ' [data-f]').forEach(i => { const v = i.value.trim(); if (v) o[i.dataset.f] = v; }); return o; }
+function fpTogg(id) { const e = $('#' + id); e.style.display = e.style.display === 'none' ? 'block' : 'none'; }
+function qfQid() { QF = fpOqi('qf'); const v = QF.bk || QF.tel || QF.ism || QF.mah || ''; $('#qq').value = v; $('#qq').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })); }
+function qfTozala() { QF = {}; document.querySelectorAll('#qf [data-f]').forEach(i => { i.value = ''; }); $('#qq').value = ''; $('#qq').dispatchEvent(new Event('input')); }
 async function qidir(q) {
   sarl('Qidirish va tahrir', 'telefon · ism · barkod · dastafka №');
-  E.innerHTML = '<input id="qq" inputmode="search" autocomplete="off" placeholder="🔎 Telefon, ism, barkod yoki dastafka №" value="' + esc(q || '') + '"><div id="qh" style="color:#8a8a8a;font-size:12px;margin:6px 2px"></div><div id="ql"></div>';
+  E.innerHTML = '<input id="qq" inputmode="search" autocomplete="off" placeholder="🔎 Telefon, ism, barkod yoki dastafka №" value="' + esc(q || '') + '"><button class="btn btn2 fbtn" onclick="fpTogg(\'qf\')">⚙️ Filtr</button><div id="qf" class="fp" style="display:none">' + fpHtml([['ism', 'Ism'], ['tel', 'Telefon'], ['bk', 'Barkod'], ['mah', 'Mahsulot nomi']], QF, 'qfQid()', 'qfTozala()') + '</div><div id="qh" style="color:#8a8a8a;font-size:12px;margin:6px 2px"></div><div id="ql"></div>';
   let T = null, S = 0;
   const tur = v => {
     const c = v.replace(/[\s+\-()]/g, ''), d = c.replace(/\D/g, '');
@@ -557,7 +572,12 @@ async function qidir(q) {
     try {
       const [r, tv0] = await Promise.all([api('qidir', { q: v }), api('qidirTovar', { q: v }).catch(e => ({ xato: e.message }))]);
       if (id !== S) return;
-      window.QR = r; const tv = Array.isArray(tv0) ? tv0 : []; window.TV = tv;
+      const F = QF, qn = fpN, hasF = Object.keys(F).length > 0;
+      const r1 = hasF ? r.filter(g => (!F.ism || qn(g.ism).indexOf(qn(F.ism)) >= 0) && (!F.tel || fpD(g.tel).indexOf(fpD(F.tel)) >= 0) && (!F.bk || g.tovar.some(t => String(t.barkod).indexOf(F.bk) >= 0)) && (!F.mah || g.tovar.some(t => qn(t.mah + t.model).indexOf(qn(F.mah)) >= 0))) : r;
+      let tv = Array.isArray(tv0) ? tv0 : [];
+      if (hasF) tv = (F.ism || F.tel) ? [] : tv.filter(t => (!F.bk || String(t.bk).indexOf(F.bk) >= 0) && (!F.mah || qn(t.nom).indexOf(qn(F.mah)) >= 0));
+      if (hasF) r.splice(0, r.length, ...r1);
+      window.QR = r; window.TV = tv;
       $('#qh').textContent = '«' + v + '» — ' + tur(v) + ' bo\'yicha: ' + (r.length || tv.length ? (tv.length ? '🏬 ' + tv.length + ' ta showroom tovar' : '') + (tv.length && r.length ? ' · ' : '') + (r.length ? '📦 ' + r.length + ' ta dastafka yozuvi' : '') : 'hech narsa topilmadi') + (tv0.xato ? ' · ⚠️ showroom: ' + tv0.xato : '');
       $('#ql').innerHTML = (tv.length ? '<div class="kt"><b>🏬 Showroom (MoySklad)</b>' + tv.map((t, ti) => '<div onclick="tovarOch(' + ti + ')" style="font-size:12.5px;margin-top:8px;padding:8px;border:1px solid #2a2a2a;border-radius:10px;cursor:pointer">' + esc(t.nom) + (t.olcham ? ' · ' + esc(t.olcham) : '') + '<br><span style="color:#aaa">🏷 ' + esc(t.bk) + ' · ' + esc(t.ombor) + ' · qoldiq: <b>' + esc(t.soni) + '</b>' + (t.bron && t.bron !== '0' ? ' (bron ' + esc(t.bron) + ')' : '') + ' · ' + esc(t.narx) + ' so\'m · <b style="color:#4caf50">batafsil ›</b></span></div>').join('') + '</div>' : '') + r.map((g, gi) => {
         const ds = (g.dast || []).filter((x, i, a) => x !== '' && a.indexOf(x) === i).join(', ');
