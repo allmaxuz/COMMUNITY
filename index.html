@@ -402,10 +402,13 @@ async function tirox() {
   try {
     const r = await api('tiroxTez', { tur: TXT, q: TXQ, min: TXM, kun: TXK, sah: TXS });
     txKesh(kalit, r);
-    if ($('#sarl').textContent === 'Tirox') txChiz(r, false);
+    if ($('#sarl').textContent === 'Tirox' && kalit === txKalit()) txChiz(r, false);   // eski so'rovning kech kelgan javobi yangi yozilganni bosib ketmasin
   } catch (e) { if (!eski) xato(e); }
 }
+const txKalit = () => 'tx|' + TXT + '|' + TXQ + '|' + TXM + '|' + TXK + '|' + TXS;
+let txTm = 0;
 function txChiz(r, eski) {
+  const ofo = document.activeElement && document.activeElement.id === 'txq', poz = ofo ? document.activeElement.selectionStart : 0;   // yozish paytida maydon tozalanmasin, fokus qolsin
   const S = r.sar, C = [['p', '📞 Bugun · ' + S.p.soni], ['k', '🚪 Kelmaganlar · ' + S.k.soni], ['b', '💰 Katta balans · ' + S.b.soni], ['o', "📵 Karta yo'q · " + S.o.soni]];
   const yoz = x => '<div class="it" onclick="txOchish(\'' + esc(x.kod) + '\')"><div class="m"><b>' + esc(x.ism || '—') + '</b><span>' + esc(x.sabab) + (x.kuy > 0 && x.kuyD ? '<br><b style="color:#ffb347">' + esc(txKuy(x.kuy, x.kuyD, x.kuyK, x.kuyV)) + '</b>' : '') + (x.vada ? '<br><b style="color:#7ee0a0">📅 ' + esc(txVd(x.vada, x.soat)) + ' da keladi</b>' : '') +
     (x.ar ? ' · ✔ ' + esc(x.ar.n) + (x.ar.i ? ' — «' + esc(x.ar.i) + '»' : '') + ' (' + (x.ar.d ? x.ar.d + ' kun oldin' : 'bugun') + ', ' + esc(x.ar.k) + ')' : '') + '</span></div>' +
@@ -419,7 +422,10 @@ function txChiz(r, eski) {
     '<div class="kt">' + (r.royxat.map(yoz).join('') || '✅ Ro\'yxat bo\'sh') + '</div>' +
     (r.yana ? '<button class="btn btn2" onclick="TXS++;tirox()">Yana ko\'rsatish (' + (r.soni - r.royxat.length) + ')</button>' : '') +
     (TXT === 'p' ? '' : pushTugma(TXT)) + '<div class="kt" style="font-size:12px;color:#aaa">🟢 jonli — balans hozir Tirox\'dan olindi. Qolgan ma\'lumot ' + (r.yosh === null ? 'yig\'ilmagan' : r.yosh + ' daq oldingi') + (eski ? ' · yangilanmoqda…' : '') + '.</div>';
-  $('#txq').onchange = e => { TXQ = e.target.value; TXS = 1; tirox(); };
+  const q = $('#txq');
+  q.oninput = e => { TXQ = e.target.value; TXS = 1; clearTimeout(txTm); txTm = setTimeout(tirox, 450); };   // yozgan zahoti saqlanadi, yozib bo'lgach qidiradi
+  q.onkeydown = e => { if (e.key === 'Enter') { clearTimeout(txTm); TXQ = q.value; TXS = 1; q.blur(); tirox(); } };
+  if (ofo) { q.focus(); try { q.setSelectionRange(poz, poz); } catch (x) {} }
   if ($('#txm')) { $('#txm').onchange = e => { TXM = Number(e.target.value); TXS = 1; tirox(); }; $('#txk').onchange = e => { TXK = Number(e.target.value); TXS = 1; tirox(); }; }
 }
 const txTel = t => { let d = String(t || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d.length >= 11 ? d : ''; };
