@@ -98,7 +98,7 @@ function api0(m, a) {
 }
 // Ekran almashganda eski so'rovning javobi yangi ekranni buzmasin: faqat o'qish so'rovlari tashlab yuboriladi
 let NAV = 0;
-const OQISH = /^(asosiy|xulosa|chatlar|yozishma|kommentlar|dastafkalar|savdo|qongiroq|karta|tahlil|tiroxTez|tiroxMijoz|tiroxXulosa|tirox|olSon|olTop|reklama|eslatmalar|tayyor|jamoa|tizim|javobTezligi|shablon|aiXarajat|qayta|qidir|telTop)$/;
+const OQISH = /^(asosiy|xulosa|chatlar|yozishma|kommentlar|dastafkalar|savdo|qongiroq|karta|tahlil|tiroxTez|qbRoyxat|tiroxMijoz|tiroxXulosa|tirox|olSon|olTop|reklama|eslatmalar|tayyor|jamoa|tizim|javobTezligi|shablon|aiXarajat|qayta|qidir|telTop)$/;
 function api(m, a) {
   const nav = NAV, p = api0(m, a);
   return OQISH.test(m) ? p.then(r => nav !== NAV ? new Promise(() => {}) : r, e => nav !== NAV ? new Promise(() => {}) : Promise.reject(e)) : p;
@@ -379,43 +379,42 @@ async function aiYangi() { await api('aiYangi').catch(() => {}); AIX = []; aiBet
 // ---------------- ☰ Ko'proq ----------------
 function koproq() {
   sarl("Ko'proq", MEN.ism + ' · ' + MEN.rol);
-  const l = [['🔎', 'Qidirish va tahrir', 'telefon, ism, barkod', 'qidir'], ['📊', 'Savdo', "mahsulot, o'lcham, sotuvchi", 'savdo'], ['📞', "Qo'ng'iroqlar", 'MetaSell', 'qongiroq'],
+  const l = [['🔎', 'Qidirish va tahrir', 'telefon, ism, barkod', 'qidir'], ['📊', 'Savdo', "mahsulot, o'lcham, sotuvchi", 'savdo'], ['📞', "Qo'ng'iroqlar", 'hamma telefon raqamlar: Tirox, Instagram, Telegram, MetaSell', 'qbBosh'], ['📊', "MetaSell qo'ng'iroq tahlili", "javobsiz, sifat, e'tirozlar", 'qongiroq'],
     ['👤', 'Mijoz kartasi', 'telefon yoki nik', 'kartaSor'], ['⏳', 'Javob tezligi', 'kim necha daqiqada', 'javobTez'], ['🔁', 'Qayta yozish', 'olmagan, lekin qiziqqanlar', 'qayta'],
     ['⏰', 'Eslatmalar', 'shaxsiy', 'eslatma'], ['💬', 'Tayyor javoblar', 'nusxa olish', 'tayyor'], ['⬇️', 'Yuklab olish', 'Excel botga keladi', 'yuklab']];
   if (MEN.rol !== 'Sotuvchi') l.push(['👥', 'Jamoa', 'odamlar va kodlar', 'jamoa'], ['⚙️', 'Tizim', 'holat, jurnal, tahrirlar', 'tizim']);
   if (MEN.rol === 'Ega') l.push(['📢', "E'lon", 'jamoaga xabar', 'elon']);
-  l.push(['🎁', 'Tirox', "xulosa va aloqa ro'yxatlari", 'tiroxBosh'], ['👕', "Mijoz ma'lumotlari", "o'lcham, ism, telefon bo'yicha qidirish", 'olcham']);
+  l.push(['🎁', 'Tirox', "hamma mijozlar, balans, filtr", 'tiroxBosh'], ['👕', "Mijoz ma'lumotlari", "o'lcham, ism, telefon bo'yicha qidirish", 'olcham']);
   if (MEN.rol === 'Ega') l.push(['💰', 'AI xarajat', 'token va $', 'aiXarajat']);
   l.push(['📖', "Qo'llanma", "har bo'lim qanday ishlaydi", 'qollanma']);
   E.innerHTML = '<div class="kt">' + l.map(([i, n, s, f]) => '<div class="it" onclick="bet(' + f + ')"><div class="av" style="background:' + (f === 'qollanma' ? 'var(--s)' : 'var(--y)') + ';color:#151515">' + i + '</div><div class="m"><b>' + n + '</b><span>' + s + '</span></div><div class="r">›</div></div>').join('') + '</div>';
 }
 // ---- TIROX: «Bugun qo'ng'iroq» + 3 ro'yxat + mijoz kartasi (balans tarixi) + natijani shu yerda belgilash ----
-let TXT = 'p', TXQ = '', TXM = 0, TXK = 0, TXS = 1;
-function tiroxBosh(saqla) { if (!saqla) { TXT = 'p'; TXQ = ''; TXM = 0; TXK = 0; TXS = 1; } return tirox(); }          // saqla — mijoz kartasidan orqaga: filtr o'zgarmaydi
+let TXT = 'h', TXQ = '', TXM = 0, TXK = 0, TXS = 1, TXKR = '';
+function tiroxBosh(saqla) { if (!saqla) { TXT = 'h'; TXQ = ''; TXM = 0; TXK = 0; TXS = 1; TXKR = ''; } return tirox(); }          // saqla — mijoz kartasidan orqaga: filtr o'zgarmaydi
 function txOchish(kod) { const z = tarix[tarix.length - 1]; if (z && z[0] === tiroxBosh) z[1] = [true]; bet(txMijoz, kod); }
-function tiroxTur(t) { TXT = t; TXM = 0; TXK = 0; TXS = 1; TXQ = ''; tirox(); }
+function tiroxTur(t) { TXT = t; TXM = 0; TXK = 0; TXS = 1; TXQ = ''; TXKR = ''; tirox(); }
 const txKesh = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if (v === null) { Object.keys(localStorage).filter(z => z.indexOf('tx|') === 0).forEach(z => localStorage.removeItem(z)); } else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} return null; };
 async function tirox() {
   sarl('Tirox', "kimga qo'ng'iroq qilish");
-  const kalit = 'tx|' + TXT + '|' + TXQ + '|' + TXM + '|' + TXK + '|' + TXS, eski = txKesh(kalit);
+  const kalit = txKalit(), eski = txKesh(kalit);
   if (eski) txChiz(eski, true); else yuk();                         // oldingi natija darhol ko'rinadi, yangisi orqada yuklanadi
   try {
-    const r = await api('tiroxTez', { tur: TXT, q: TXQ, min: TXM, kun: TXK, sah: TXS });
+    const r = await api('tiroxTez', { tur: TXT, q: TXQ, min: TXM, kun: TXK, sah: TXS, kart: TXKR });
     txKesh(kalit, r);
     if ($('#sarl').textContent === 'Tirox' && kalit === txKalit()) txChiz(r, false);   // eski so'rovning kech kelgan javobi yangi yozilganni bosib ketmasin
   } catch (e) { if (!eski) xato(e); }
 }
-const txKalit = () => 'tx|' + TXT + '|' + TXQ + '|' + TXM + '|' + TXK + '|' + TXS;
+const txKalit = () => 'tx|' + TXT + '|' + TXQ + '|' + TXM + '|' + TXK + '|' + TXS + '|' + TXKR;
 let txTm = 0;
 function txChiz(r, eski) {
   const ofo = document.activeElement && document.activeElement.id === 'txq', poz = ofo ? document.activeElement.selectionStart : 0;   // yozish paytida maydon tozalanmasin, fokus qolsin
-  const S = r.sar, C = [['p', '📞 Bugun · ' + S.p.soni], ['k', '🚪 Kelmaganlar · ' + S.k.soni], ['b', '💰 Katta balans · ' + S.b.soni], ['o', "📵 Karta yo'q · " + S.o.soni]];
+  const S = r.sar, C = [['h', '📋 Hamma · ' + (S.h ? S.h.soni : r.soni)], ['k', '🚪 Kelmaganlar · ' + S.k.soni], ['b', '💰 Katta balans · ' + S.b.soni], ['o', "📵 Karta yo'q · " + S.o.soni]];
   const yoz = x => '<div class="it" onclick="txOchish(\'' + esc(x.kod) + '\')"><div class="m"><b>' + esc(x.ism || '—') + '</b><span>' + esc(x.sabab) + (x.kuy > 0 && x.kuyD ? '<br><b style="color:#ffb347">' + esc(txKuy(x.kuy, x.kuyD, x.kuyK, x.kuyV)) + '</b>' : '') + (x.vada ? '<br><b style="color:#7ee0a0">📅 ' + esc(txVd(x.vada, x.soat)) + ' da keladi</b>' : '') +
     (x.ar ? ' · ✔ ' + esc(x.ar.n) + (x.ar.i ? ' — «' + esc(x.ar.i) + '»' : '') + ' (' + (x.ar.d ? x.ar.d + ' kun oldin' : 'bugun') + ', ' + esc(x.ar.k) + ')' : '') + '</span></div>' +
     '<div class="r" style="font-size:13px;color:#fff"><b>' + pul(x.bal) + '</b>' + (x.j ? '<br><span style="font-size:10px;color:#4caf50">🟢 jonli</span>' : '') + '</div>' + (txTel(x.tel) ? '<a class="btn" style="width:auto;margin:0;padding:9px 13px;text-decoration:none" href="tel:+' + txTel(x.tel) + '" onclick="event.stopPropagation()">📞</a>' : '<span style="opacity:.5;font-size:11px;white-space:nowrap">📵 raqam yo\'q</span>') + '</div>';
-  const filtr = TXT === 'p' ? '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><button class="btn" id="txb">🔎 Qidirish</button>' :
-    '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><button class="btn" id="txb">🔎 Qidirish</button><div class="row"><select id="txm"><option value="0">💰 Balans: hammasi</option>' + [15000, 50000, 100000, 200000].map(v => '<option value="' + v + '"' + (TXM === v ? ' selected' : '') + '>≥ ' + pul(v) + '</option>').join('') +
-    '</select><select id="txk"><option value="0">📅 Kelmagan: hammasi</option>' + [40, 60, 90, 180].map(v => '<option value="' + v + '"' + (TXK === v ? ' selected' : '') + '>≥ ' + v + ' kun</option>').join('') + '</select></div>';
+  const filtr = '<input id="txq" placeholder="🔎 ism yoki telefon" value="' + esc(TXQ) + '"><button class="btn" id="txb">🔎 Qidirish</button><button class="btn btn2 fbtn" onclick="fpTogg(\'txfp\')">⚙️ Filtr' + (TXM || TXK || TXKR ? ' •' : '') + '</button><div id="txfp" class="fp" style="display:' + (TXM || TXK || TXKR ? 'block' : 'none') + '"><div class="row"><select id="txm"><option value="0">💰 Balans: hammasi</option>' + [15000, 50000, 100000, 200000].map(v => '<option value="' + v + '"' + (TXM === v ? ' selected' : '') + '>≥ ' + pul(v) + '</option>').join('') +
+    '</select><select id="txk"><option value="0">📅 Kelmagan: hammasi</option>' + [40, 60, 90, 180].map(v => '<option value="' + v + '"' + (TXK === v ? ' selected' : '') + '>≥ ' + v + ' kun</option>').join('') + '</select><select id="txkr"><option value="">💳 Karta: hammasi</option><option value="on"' + (TXKR === 'on' ? ' selected' : '') + '>💳 Karta bor</option><option value="off"' + (TXKR === 'off' ? ' selected' : '') + ">📵 Karta yo'q</option></select></div></div>";
   const bosh = TXT === 'p' ? '<div class="kt"><b>📞 Bugun shularga qo\'ng\'iroq qiling</b><br><span style="color:#aaa;font-size:12px">Eng muhimlari tepada: va\'da berganlar → bonusi kuyadiganlar → katta balans → uzoq kelmaganlar. Qo\'ng\'iroqdan keyin mijozni bosib natijani belgilang.</span></div>' :
     '<div class="g2">' + k('JAMI', r.soni + ' ta') + k('Balans', pul(r.jami)) + k("O'RTACHA", pul(r.ortacha)) + k('Yashirin', r.yashirin, '7 kun ichida aloqa qilingan') + '</div>';
   E.innerHTML = chipq(C, TXT, 'tiroxTur') + filtr + bosh +
@@ -427,7 +426,7 @@ function txChiz(r, eski) {
   $('#txb').onclick = () => { TXQ = q.value; TXS = 1; tirox(); };                                    // «Qidirish» tugmasi yoki Enter
   q.onkeydown = e => { if (e.key === 'Enter') { clearTimeout(txTm); TXQ = q.value; TXS = 1; q.blur(); tirox(); } };
   if (ofo) { q.focus(); try { q.setSelectionRange(poz, poz); } catch (x) {} }
-  if ($('#txm')) { $('#txm').onchange = e => { TXM = Number(e.target.value); TXS = 1; tirox(); }; $('#txk').onchange = e => { TXK = Number(e.target.value); TXS = 1; tirox(); }; }
+  if ($('#txm')) { $('#txm').onchange = e => { TXM = Number(e.target.value); TXS = 1; tirox(); }; $('#txk').onchange = e => { TXK = Number(e.target.value); TXS = 1; tirox(); }; $('#txkr').onchange = e => { TXKR = e.target.value; TXS = 1; tirox(); }; }
 }
 const txTel = t => { let d = String(t || '').replace(/\D/g, ''); if (d.length === 9) d = '998' + d; return d.length >= 11 ? d : ''; };
 const txD = d => d ? String(d).split('-').reverse().join('.') : '';
@@ -665,6 +664,49 @@ async function savdo(d) {
   } catch (e) { if (JIM) return; E.innerHTML = ''; xato(e); }
 }
 let QD = 'bugun';
+let QBT = 'hamma', QBQ = '', QBS = 1, QBF = {}, QBR = null;
+const QBN = { tirox: '🎁', insta: '📸', tg: '✈️', metasel: '🛍', dastafka: '🚚' };
+function qbBosh(saqla) { if (!saqla) { QBT = 'hamma'; QBQ = ''; QBS = 1; QBF = {}; QBR = null; } return qb(); }
+function qbTur(t) { QBT = t; QBS = 1; qb(); }
+function qbOchish(kod, tel) { const z = tarix[tarix.length - 1]; if (z && z[0] === qbBosh) z[1] = [true]; if (kod) bet(txMijoz, kod); else bet(karta, tel); }
+function qbQid() { QBF = fpOqi('qbfp'); QBS = 1; qb(); }
+function qbTozala() { QBF = {}; QBQ = ''; QBS = 1; qb(); }
+const qbKalit = () => JSON.stringify([QBT, QBQ, QBS, QBF]);
+async function qb() {
+  sarl("Qo'ng'iroqlar", "hamma telefon raqamlar — bitta baza");
+  const kalit = qbKalit();
+  if (QBR) qbChiz(QBR, true); else yuk();
+  try {
+    const r = await api('qbRoyxat', { tur: QBT, q: QBQ, sah: QBS, fi: QBF.fi || '', ft: QBF.ft || '' });
+    QBR = r;
+    if ($('#sarl').textContent === "Qo'ng'iroqlar" && kalit === qbKalit()) qbChiz(r, false);
+  } catch (e) { if (!QBR) xato(e); }
+}
+function qbChiz(r, eski) {
+  const ofo = document.activeElement && document.activeElement.id === 'qbq', poz = ofo ? document.activeElement.selectionStart : 0;
+  const S = r.sar, C = [['hamma', '📋 Hammasi · ' + S.hamma], ['qil', '📞 Qilish kerak · ' + S.qil], ['tirox', '🎁 Tirox · ' + S.tirox], ['insta', '📸 Instagram · ' + S.insta], ['tg', '✈️ Telegram · ' + S.tg], ['metasel', '🛍 MetaSell · ' + S.metasel], ['dastafka', '🚚 Dastafka · ' + S.dastafka]];
+  let oldin = null;
+  const yoz = x => {
+    let b = '';
+    if (QBT === 'hamma' && oldin !== !!x.qil) { b = '<div style="margin:10px 2px 4px;font-weight:700;font-size:13px;color:' + (x.qil ? '#ffb347' : '#8a8a8a') + '">' + (x.qil ? "📞 Qo'ng'iroq qilish kerak" : '📒 Oddiy raqamlar') + '</div>'; }
+    oldin = !!x.qil;
+    const t = txTel(x.tel);
+    return b + '<div class="it" onclick="qbOchish(' + esc(JSON.stringify(x.kod || '')) + ',' + esc(JSON.stringify(x.tel || '')) + ')"><div class="m"><b>' + esc(x.ism || '—') + '</b><span>' + x.m.map(z => QBN[z] || z).join(' ') + (x.sabab ? ' · <b style="color:#ffb347">' + esc(x.sabab) + '</b>' : '') + (x.kun !== null && x.kun !== undefined && x.kod ? ' · ' + x.kun + ' kun oldin kelgan' : '') + '</span></div>' +
+      (x.bal ? '<div class="r" style="font-size:13px;color:#fff"><b>' + pul(x.bal) + '</b></div>' : '') +
+      (t ? '<a class="btn" style="width:auto;margin:0;padding:9px 13px;text-decoration:none" href="tel:+' + t + '" onclick="event.stopPropagation()">📞</a>' : '<span style="opacity:.5;font-size:11px;white-space:nowrap">📵 raqam yo\'q</span>') + '</div>';
+  };
+  const fa = QBF.fi || QBF.ft;
+  E.innerHTML = chipq(C, QBT, 'qbTur') + '<input id="qbq" inputmode="search" placeholder="🔎 telefon yoki ism" value="' + esc(QBQ) + '"><button class="btn" id="qbb">🔎 Qidirish</button><button class="btn btn2 fbtn" onclick="fpTogg(\'qbfp\')">⚙️ Filtr' + (fa ? ' •' : '') + '</button><div id="qbfp" class="fp" style="display:' + (fa ? 'block' : 'none') + '">' + fpHtml([['fi', 'Ism'], ['ft', 'Telefon']], QBF, 'qbQid()', 'qbTozala()') + '</div>' +
+    '<div class="kt" style="font-size:12px;color:#aaa">Tirox, Instagram, Telegram, MetaSell va dastafkadagi barcha raqamlar bitta ro\'yxatda. «Qilish kerak» tepada. Raqam bo\'yicha qidirsangiz hamma manbadan topiladi.</div>' +
+    '<div class="kt">' + (r.royxat.map(yoz).join('') || "✅ Ro'yxat bo'sh") + '</div>' +
+    (r.yana ? '<button class="btn btn2" onclick="QBS++;qb()">Yana ko\'rsatish (' + (r.soni - r.royxat.length) + ')</button>' : '') +
+    '<button class="btn btn2" onclick="bet(qongiroq)">📊 MetaSell qo\'ng\'iroq tahlili</button><div class="kt" style="font-size:12px;color:#aaa">Tirox ma\'lumoti ' + (r.yosh === null ? 'yig\'ilmagan' : r.yosh + ' daq oldingi') + (eski ? ' · yangilanmoqda…' : '') + '.</div>';
+  const q = $('#qbq');
+  q.oninput = e => { QBQ = e.target.value; };
+  $('#qbb').onclick = () => { QBQ = q.value; QBS = 1; qb(); };
+  q.onkeydown = e => { if (e.key === 'Enter') { QBQ = q.value; QBS = 1; q.blur(); qb(); } };
+  if (ofo) { q.focus(); try { q.setSelectionRange(poz, poz); } catch (x) {} }
+}
 async function qongiroq(d) {
   QD = d || QD; sarl("Qo'ng'iroqlar", 'MetaSell'); yuk();
   try {
